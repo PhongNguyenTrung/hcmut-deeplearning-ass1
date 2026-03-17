@@ -1,7 +1,19 @@
-# Core DL
-torch>=2.0.0
-torchvision>=0.15.0
-torchaudio>=2.0.0
+# ──────────────────────────────────────────────────────────────────
+# IMPORTANT: PyTorch must be installed separately with the correct index:
+#
+#   CPU only (recommended for local dev):
+#   python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#
+#   CUDA 12.1 (for GPU):
+#   python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#
+#   Then install the rest:
+#   python -m pip install -r requirements.txt --ignore-installed torch torchvision
+# ──────────────────────────────────────────────────────────────────
+
+# Core DL (installed separately via URL above)
+# torch>=2.0.0
+# torchvision>=0.15.0
 
 # HuggingFace ecosystem
 transformers>=4.35.0
