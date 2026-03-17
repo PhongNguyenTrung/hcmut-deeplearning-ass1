@@ -1,0 +1,98 @@
+name: 🧪 CI – Lint & Syntax Check
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'src/**'
+      - 'notebooks/**'
+      - 'requirements.txt'
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Python Lint & Syntax Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: 📦 Install lint tools
+        run: |
+          pip install --upgrade pip
+          pip install flake8 nbformat
+
+      - name: 🔍 Flake8 – Syntax & style check on src/
+        run: |
+          flake8 src/ \
+            --max-line-length=120 \
+            --ignore=E501,W503,E203 \
+            --exclude=__pycache__ \
+            --statistics
+        continue-on-error: true  # Không fail CI nếu có style warning
+
+      - name: 📓 Validate Jupyter Notebooks
+        run: |
+          python - <<'EOF'
+          import json, sys, pathlib
+
+          errors = []
+          for nb_path in pathlib.Path("notebooks").glob("*.ipynb"):
+              try:
+                  with open(nb_path, "r", encoding="utf-8") as f:
+                      nb = json.load(f)
+                  # Check basic structure
+                  assert "cells" in nb, "Missing 'cells' key"
+                  assert "nbformat" in nb, "Missing 'nbformat' key"
+                  print(f"  ✅ {nb_path.name} — {len(nb['cells'])} cells")
+              except Exception as e:
+                  errors.append(f"  ❌ {nb_path.name}: {e}")
+
+          if errors:
+              print("\nNotebook validation errors:")
+              for e in errors:
+                  print(e)
+              sys.exit(1)
+          else:
+              print("\nAll notebooks valid ✅")
+          EOF
+
+      - name: 📊 Report summary
+        if: always()
+        run: |
+          echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Python version**: 3.10" >> $GITHUB_STEP_SUMMARY
+          echo "- **src modules checked**: $(ls src/*.py | wc -l) files" >> $GITHUB_STEP_SUMMARY
+          echo "- **Notebooks validated**: $(ls notebooks/*.ipynb | wc -l) files" >> $GITHUB_STEP_SUMMARY
+
+  check-requirements:
+    name: Validate requirements.txt
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 🔍 Check requirements file exists and is parseable
+        run: |
+          python -c "
+          with open('requirements.txt') as f:
+              lines = [l.strip() for l in f if l.strip() and not l.startswith('#')]
+          print(f'requirements.txt: {len(lines)} packages listed')
+          for line in lines:
+              print(f'  - {line}')
+          "
