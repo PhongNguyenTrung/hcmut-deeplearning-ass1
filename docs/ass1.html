@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BTL1 – Phân loại Ảnh, Văn bản & Đa phương thức | CO5085</title>
+  <meta name="description" content="Bài tập lớn 1: So sánh CNN vs ViT, RNN vs Transformer, Zero-shot vs Few-shot classification – CO5085 Deep Learning">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #6366f1; --accent: #ec4899; --green: #10b981; --yellow: #f59e0b;
+      --bg: #0f0f1a; --surface: #1a1a2e; --text: #e2e8f0; --text-muted: #94a3b8;
+      --border: rgba(99,102,241,0.2); --glow: rgba(99,102,241,0.12);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+    .bg-blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.1; pointer-events: none; z-index: 0; }
+    .blob1 { width: 500px; height: 500px; background: var(--primary); top: -100px; right: -100px; animation: float 9s ease-in-out infinite alternate; }
+    .blob2 { width: 350px; height: 350px; background: var(--accent); bottom: 100px; left: -100px; animation: float 7s ease-in-out infinite alternate-reverse; }
+    @keyframes float { from { transform: translateY(0); } to { transform: translateY(30px); } }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(16px); background: rgba(15,15,26,0.85);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* Hero */
+    .hero {
+      position: relative; z-index: 1; text-align: center;
+      padding: 6rem 2rem 4rem; max-width: 800px; margin: 0 auto;
+    }
+    .badge {
+      display: inline-block; background: rgba(99,102,241,0.15); border: 1px solid var(--border);
+      border-radius: 999px; padding: 0.35rem 1rem; font-size: 0.8rem; color: #a5b4fc; margin-bottom: 1.2rem;
+    }
+    .hero h1 { font-size: clamp(1.8rem, 4.5vw, 3rem); font-weight: 800; line-height: 1.2;
+      background: linear-gradient(135deg, #e2e8f0, #818cf8, var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
+    .hero p { color: var(--text-muted); font-size: 1rem; line-height: 1.7; }
+
+    /* Links section */
+    .links-section { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 1rem 2rem 3rem; }
+    .links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .link-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 1.4rem; display: flex; flex-direction: column; gap: 0.6rem;
+      text-decoration: none; color: var(--text); transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .link-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px var(--glow); }
+    .link-card .icon { font-size: 1.8rem; }
+    .link-card .title { font-weight: 700; font-size: 0.95rem; }
+    .link-card .desc { color: var(--text-muted); font-size: 0.8rem; }
+    .link-card.coming { opacity: 0.5; cursor: not-allowed; }
+
+    /* Reports */
+    .section { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 1rem 2rem 4rem; }
+    .section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .section .sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+    .report-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .report-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.1rem 1.4rem; display: flex; align-items: center; gap: 1rem;
+      text-decoration: none; color: var(--text); transition: background 0.2s, transform 0.2s;
+    }
+    .report-item:hover { background: rgba(99,102,241,0.08); transform: translateX(4px); }
+    .report-item .num {
+      min-width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700;
+    }
+    .report-item .info { flex: 1; }
+    .report-item .info .name { font-weight: 600; font-size: 0.95rem; }
+    .report-item .info .status { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .status-badge {
+      font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 600;
+    }
+    .status-badge.done { background: rgba(16,185,129,0.15); color: #34d399; }
+    .status-badge.wip  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .status-badge.todo { background: rgba(148,163,184,0.1); color: var(--text-muted); }
+
+    /* Models comparison table */
+    .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.75rem 1rem; text-align: left; font-size: 0.875rem; }
+    th { background: rgba(99,102,241,0.1); font-weight: 700; color: #a5b4fc; border-bottom: 1px solid var(--border); }
+    tr:not(:last-child) td { border-bottom: 1px solid rgba(99,102,241,0.08); }
+    tr:hover td { background: rgba(99,102,241,0.04); }
+    .metric { font-weight: 700; color: var(--green); }
+    .tbd { color: var(--text-muted); font-style: italic; }
+
+    footer { position: relative; z-index: 1; text-align: center; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.82rem; }
+    footer a { color: var(--primary); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="bg-blob blob1"></div>
+  <div class="bg-blob blob2"></div>
+
+  <nav>
+    <span class="nav-brand">CO5085 · BTL1</span>
+    <div class="nav-links">
+      <a href="index.html">← Trang chủ</a>
+      <a href="#links">Links</a>
+      <a href="#reports">Báo cáo</a>
+      <a href="#results">Kết quả</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="badge">Bài Tập Lớn #1 · CO5085</div>
+    <h1>Phân loại Ảnh, Văn bản<br>& Đa phương thức</h1>
+    <p>So sánh <strong>CNN vs. ViT</strong> (ảnh) · <strong>RNN vs. Transformer</strong> (văn bản) · <strong>Zero-shot vs. Few-shot</strong> (đa phương thức)</p>
+  </div>
+
+  <div class="links-section" id="links">
+    <div class="links-grid">
+      <a href="[LINK_VIDEO_DEMO]" class="link-card coming" id="demo-link">
+        <div class="icon">🎬</div>
+        <div class="title">Video Demo</div>
+        <div class="desc">Demo ứng dụng phân loại trực tiếp</div>
+      </a>
+      <a href="[LINK_YOUTUBE]" class="link-card coming" id="presentation-link">
+        <div class="icon">📽️</div>
+        <div class="title">Video Trình Bày</div>
+        <div class="desc">Báo cáo và bảo vệ kết quả (YouTube)</div>
+      </a>
+      <a href="[LINK_CODE]" class="link-card" id="code-link">
+        <div class="icon">💻</div>
+        <div class="title">Source Code</div>
+        <div class="desc">Notebooks và modules Python</div>
+      </a>
+      <a href="[LINK_SLIDE_PDF]" class="link-card coming" id="slide-link">
+        <div class="icon">📊</div>
+        <div class="title">Slide PDF</div>
+        <div class="desc">Slide trình bày tổng hợp</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="section" id="reports">
+    <h2>📄 Nội Dung Trình Bày</h2>
+    <div class="sub">Chi tiết từng phần báo cáo</div>
+    <div class="report-list">
+      <a href="#" class="report-item">
+        <div class="num">1</div>
+        <div class="info">
+          <div class="name">Báo cáo EDA – Khám phá Tập Dữ Liệu</div>
+          <div class="status">CIFAR-100 · 20 Newsgroups · Flickr30k</div>
+        </div>
+        <span class="status-badge wip">🔄 In progress</span>
+      </a>
+      <a href="#" class="report-item">
+        <div class="num">2</div>
+        <div class="info">
+          <div class="name">Dataset, DataLoader & Augmentation</div>
+          <div class="status">Chuẩn bị dữ liệu và augmentation strategy</div>
+        </div>
+        <span class="status-badge wip">🔄 In progress</span>
+      </a>
+      <a href="#" class="report-item">
+        <div class="num">3</div>
+        <div class="info">
+          <div class="name">Xây dựng, Huấn luyện & Đánh giá Mô hình</div>
+          <div class="status">CNN, ViT, BiLSTM, BERT, CLIP</div>
+        </div>
+        <span class="status-badge todo">⏳ Todo</span>
+      </a>
+      <a href="#" class="report-item">
+        <div class="num">4</div>
+        <div class="info">
+          <div class="name">Kết quả Thực nghiệm</div>
+          <div class="status">Bảng số liệu, biểu đồ, phân tích và thảo luận</div>
+        </div>
+        <span class="status-badge todo">⏳ Todo</span>
+      </a>
+      <a href="#" class="report-item">
+        <div class="num">5</div>
+        <div class="info">
+          <div class="name">Mở rộng: Grad-CAM, Error Analysis, Demo App</div>
+          <div class="status">Giải thích mô hình và demo ứng dụng</div>
+        </div>
+        <span class="status-badge todo">⏳ Todo</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="section" id="results">
+    <h2>📊 Kết Quả Thực Nghiệm</h2>
+    <div class="sub">*(Sẽ được cập nhật sau khi hoàn thành thực nghiệm)*</div>
+
+    <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">🖼️ Image Classification (CIFAR-100)</h3>
+    <div class="table-wrap" style="margin-bottom:2rem;">
+      <table>
+        <thead><tr><th>Model</th><th>Type</th><th>Test Accuracy</th><th>F1-Macro</th><th>Params</th></tr></thead>
+        <tbody>
+          <tr><td>ResNet-50</td><td>CNN</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>25.6M</td></tr>
+          <tr><td>EfficientNet-B0</td><td>CNN</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>5.3M</td></tr>
+          <tr><td>ViT-B/16</td><td>ViT</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>86M</td></tr>
+          <tr><td>DeiT-S</td><td>ViT</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>22M</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">📝 Text Classification (20 Newsgroups)</h3>
+    <div class="table-wrap" style="margin-bottom:2rem;">
+      <table>
+        <thead><tr><th>Model</th><th>Type</th><th>Test Accuracy</th><th>F1-Macro</th></tr></thead>
+        <tbody>
+          <tr><td>BiLSTM</td><td>RNN</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>GRU</td><td>RNN</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>DistilBERT</td><td>Transformer</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>BERT-base</td><td>Transformer</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">🔀 Multimodal (CIFAR-100 Superclasses / CLIP)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Approach</th><th>Shots</th><th>Accuracy</th><th>F1-Macro</th></tr></thead>
+        <tbody>
+          <tr><td>Zero-shot (CLIP)</td><td>0</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>Few-shot (CLIP + Linear)</td><td>1</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>Few-shot (CLIP + Linear)</td><td>5</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>Few-shot (CLIP + Linear)</td><td>10</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>Few-shot (CLIP + Linear)</td><td>20</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <p>CO5085 – Deep Learning & Ứng dụng trong Thị giác Máy tính · ĐH Bách Khoa TP.HCM</p>
+    <p style="margin-top:0.4rem; opacity:0.6;">Giảng viên: Lê Thành Sách | <a href="index.html">← Trang chủ</a></p>
+  </footer>
+</body>
+</html>

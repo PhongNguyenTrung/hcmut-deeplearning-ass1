@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data (large files)
+data/image/cifar-100*/
+data/image/food-101*/
+data/text/20news*/
+data/multimodal/flickr*/
+data/multimodal/coco*/
+*.tar.gz
+*.zip
+*.h5
+
+# Model checkpoints
+results/*.pt
+results/*.pth
+results/*.ckpt
+
+# Logs
+results/logs/
+*.log
+wandb/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Env
+.env
+*.env

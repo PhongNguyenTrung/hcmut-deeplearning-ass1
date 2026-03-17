@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CO5085 – Deep Learning | Nhóm [TÊN NHÓM]</title>
+  <meta name="description" content="Trang tổng hợp bài tập lớn môn CO5085 – Deep Learning & Ứng dụng trong Thị giác Máy tính – ĐH Bách Khoa TP.HCM">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --accent: #ec4899;
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border: rgba(99,102,241,0.2);
+      --glow: rgba(99,102,241,0.15);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background animated gradient blobs */
+    .bg-blob {
+      position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.12;
+      animation: floatBlob 8s ease-in-out infinite alternate; pointer-events: none; z-index: 0;
+    }
+    .blob1 { width: 600px; height: 600px; background: var(--primary); top: -200px; left: -200px; }
+    .blob2 { width: 400px; height: 400px; background: var(--accent); bottom: -100px; right: -100px; animation-delay: -4s; }
+    @keyframes floatBlob { from { transform: translate(0,0) scale(1); } to { transform: translate(40px,40px) scale(1.05); } }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(16px);
+      background: rgba(15,15,26,0.8);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-weight: 800; font-size: 1.1rem; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* Hero */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center; padding: 7rem 2rem 5rem;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(99,102,241,0.15); border: 1px solid var(--border);
+      border-radius: 999px; padding: 0.4rem 1rem;
+      font-size: 0.8rem; color: #a5b4fc; margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.15;
+      background: linear-gradient(135deg, #e2e8f0, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    .hero p { color: var(--text-muted); font-size: 1.1rem; max-width: 560px; margin: 0 auto 2.5rem; line-height: 1.7; }
+
+    /* Info cards row */
+    .info-row {
+      position: relative; z-index: 1;
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      padding: 0 2rem 4rem; max-width: 960px; margin: 0 auto;
+    }
+    .info-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.2rem 1.8rem; flex: 1 1 220px; max-width: 280px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .info-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px var(--glow); }
+    .info-card .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+    .info-card .value { font-weight: 700; font-size: 1rem; }
+
+    /* Section */
+    section { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 5rem; }
+    .section-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .section-subtitle { color: var(--text-muted); margin-bottom: 2rem; }
+
+    /* Assignment cards */
+    .ass-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .ass-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      padding: 2rem; display: flex; flex-direction: column; gap: 1rem;
+      transition: transform 0.25s, box-shadow 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .ass-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(99,102,241,0.06), transparent);
+      pointer-events: none;
+    }
+    .ass-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px var(--glow); }
+    .ass-card .number { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+    .ass-card h3 { font-size: 1.1rem; font-weight: 700; }
+    .ass-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; flex: 1; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white; text-decoration: none; padding: 0.6rem 1.2rem;
+      border-radius: 10px; font-size: 0.875rem; font-weight: 600;
+      transition: opacity 0.2s, transform 0.15s; width: fit-content;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn.disabled { background: var(--surface2); color: var(--text-muted); cursor: not-allowed; }
+
+    /* Members */
+    .members-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .member-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.5rem; text-align: center;
+    }
+    .member-avatar {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 800; margin: 0 auto 0.8rem;
+    }
+    .member-name { font-weight: 700; font-size: 0.95rem; }
+    .member-id { color: var(--text-muted); font-size: 0.82rem; margin-top: 0.2rem; }
+
+    /* Footer */
+    footer {
+      position: relative; z-index: 1; text-align: center; padding: 2rem;
+      border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-blob blob1"></div>
+  <div class="bg-blob blob2"></div>
+
+  <nav>
+    <span class="nav-brand">CO5085 · Deep Learning</span>
+    <div class="nav-links">
+      <a href="#assignments">Bài Tập</a>
+      <a href="#members">Nhóm</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-badge">🎓 ĐH Bách Khoa TP.HCM · Khoa KHMT</div>
+    <h1>Deep Learning &<br>Computer Vision</h1>
+    <p>Trang tổng hợp bài tập lớn môn <strong>CO5085</strong> – Năm học 2025–2026, Học kỳ 2</p>
+  </div>
+
+  <div class="info-row">
+    <div class="info-card">
+      <div class="label">Môn học</div>
+      <div class="value">CO5085</div>
+    </div>
+    <div class="info-card">
+      <div class="label">Giảng viên</div>
+      <div class="value">Lê Thành Sách</div>
+    </div>
+    <div class="info-card">
+      <div class="label">Năm học</div>
+      <div class="value">2025–2026, HK2</div>
+    </div>
+    <div class="info-card">
+      <div class="label">Hạn nộp BTL1</div>
+      <div class="value">25/03/2026</div>
+    </div>
+  </div>
+
+  <section id="assignments">
+    <div class="section-title">📚 Bài Tập Lớn</div>
+    <div class="section-subtitle">Danh sách các bài tập lớn trong môn học</div>
+    <div class="ass-grid">
+      <div class="ass-card">
+        <div class="number">01</div>
+        <h3>Phân loại Ảnh, Văn bản & Đa phương thức</h3>
+        <p>So sánh CNN vs. ViT, RNN vs. Transformer, và Zero-shot vs. Few-shot classification.</p>
+        <a href="ass1.html" class="btn">📋 Xem chi tiết →</a>
+      </div>
+      <!-- Thêm bài tập lớn 2, 3 ở đây khi có -->
+    </div>
+  </section>
+
+  <section id="members">
+    <div class="section-title">👥 Thành Viên Nhóm</div>
+    <div class="section-subtitle">Giảng viên: <strong>Lê Thành Sách</strong></div>
+    <div class="members-grid">
+      <!-- ✏️ Thay bằng tên và MSSV của nhóm bạn -->
+      <div class="member-card">
+        <div class="member-avatar">A</div>
+        <div class="member-name">[Tên thành viên 1]</div>
+        <div class="member-id">MSSV: [XXXXXXXXX]</div>
+      </div>
+      <div class="member-card">
+        <div class="member-avatar">B</div>
+        <div class="member-name">[Tên thành viên 2]</div>
+        <div class="member-id">MSSV: [XXXXXXXXX]</div>
+      </div>
+      <div class="member-card">
+        <div class="member-avatar">C</div>
+        <div class="member-name">[Tên thành viên 3]</div>
+        <div class="member-id">MSSV: [XXXXXXXXX]</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>CO5085 – Deep Learning & Ứng dụng trong Thị giác Máy tính · ĐH Bách Khoa TP.HCM</p>
+    <p style="margin-top:0.4rem; opacity:0.6;">Giảng viên: Lê Thành Sách | Năm học 2025–2026</p>
+  </footer>
+</body>
+</html>
