@@ -51,3 +51,4 @@ desktop.ini
 # Env
 .env
 *.env
+.venv/

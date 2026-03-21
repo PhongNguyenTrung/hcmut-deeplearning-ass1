@@ -4,75 +4,109 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CO5085 – Deep Learning & Computer Vision Applications (HCMUT 2025-2026) assignment comparing model architectures across three domains: image classification, text classification, and multimodal learning.
+CO5085 – Deep Learning & Computer Vision Applications (HCMUT 2025-2026) assignment comparing model architectures across three domains: image classification, text classification, and multimodal learning. **Deadline: 25/03/2026.**
+
+## Environment Setup
+
+Always use a virtual environment to avoid Python version conflicts:
+
+```bash
+cd hcmut-deeplearning-ass1
+python3 -m venv .venv
+source .venv/bin/activate
+
+# macOS (Apple Silicon M1/M2/M3/M4) — MPS acceleration, no --index-url needed
+pip install torch torchvision
+pip install -r requirements.txt
+pip install ipykernel
+python -m ipykernel install --user --name=deeplearning-ass1
+```
+
+For VS Code notebooks: select the **deeplearning-ass1** kernel (top-right of notebook).
+
+> On macOS, `DEVICE` auto-detects MPS: `"cuda" if cuda else "mps" if mps else "cpu"`. Mixed-precision AMP is CUDA-only and is automatically skipped on MPS/CPU.
 
 ## Commands
 
-### Installation
+### Run Training Scripts
 
 ```bash
-# PyTorch must be installed separately with the correct index URL
-python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-pip install -r requirements.txt
+# Train all 4 image models (ResNet-50, EfficientNet-B0, ViT-B/16, DeiT-Small) on CIFAR-100
+python scripts/train_image.py
+
+# Train a single image model
+python scripts/train_image.py --model resnet50   # or efficientnet | vit_b16 | deit_small
+
+# Train all 4 text models (BiLSTM, GRU, DistilBERT, BERT) on 20 Newsgroups
+python scripts/train_text.py
+python scripts/train_text.py --model distilbert  # or bilstm | gru | bert
+
+# CLIP zero-shot + few-shot on CIFAR-100 superclasses
+python scripts/train_multimodal.py
+python scripts/train_multimodal.py --n_test 1000 --shots 1 5 10 20
+```
+
+All scripts save checkpoints, metrics JSON, and training curve PNGs to `results/`.
+
+### Notebooks
+
+```bash
+# Regenerate all 7 notebooks from create_notebooks.py (do not edit notebooks directly)
+python create_notebooks.py
+
+# Execute a notebook and save outputs in-place
+jupyter nbconvert --to notebook --execute notebooks/01_eda_image.ipynb --inplace
 ```
 
 ### Linting
 
 ```bash
-# Flake8 with project settings (max-line-length=120, ignores E501/W503/E203)
 flake8 src/ --max-line-length=120 --ignore=E501,W503,E203
-
-# Validate notebook JSON structure
-python -c "import nbformat; nbformat.read('notebooks/01_eda_image.ipynb', as_version=4)"
-```
-
-### Notebooks
-
-```bash
-# Regenerate all notebooks from create_notebooks.py
-python create_notebooks.py
-
-# Run a specific notebook
-jupyter nbconvert --to notebook --execute notebooks/04_image_cnn_vit.ipynb
 ```
 
 ## Architecture
 
-The codebase is split into four `src/` modules plus notebooks for experimentation:
+**`src/datasets.py`** — Dataset loaders:
+- `get_cifar100_loaders(data_dir, batch_size, num_workers)` → train/val/test DataLoaders
+- `get_20newsgroups_loaders(tokenizer_name, batch_size, max_length, num_workers)` → loaders + tokenizer + num_classes
+- `Flickr30kDataset` — image+caption pairs (requires CSV with image_path/caption/label columns)
 
-**`src/datasets.py`** — Dataset loaders and transforms for all three domains:
-- Image: CIFAR-100 (32×32, 100 classes), Food-101 — with augmentation/normalization
-- Text: 20 Newsgroups (20 categories) — with AutoTokenizer for BERT-family models and vocabulary building for RNN models
-- Multimodal: Flickr30k — image+caption pairs for CLIP
+**`src/models.py`** — Model factories:
+- `get_resnet50(num_classes, pretrained, freeze_backbone)`
+- `get_efficientnet_b0(num_classes, pretrained, freeze_backbone)`
+- `get_vit_b16(num_classes, pretrained, freeze_backbone)` — HuggingFace `google/vit-base-patch16-224-in21k`
+- `get_deit_small(num_classes, pretrained, freeze_backbone)` — HuggingFace `facebook/deit-small-patch16-224`
+- `BiLSTMClassifier(vocab_size, embed_dim, hidden_dim, num_layers, num_classes, dropout)`
+- `GRUClassifier(vocab_size, ...)` — same signature as BiLSTM
+- `get_distilbert(num_classes)`, `get_bert(num_classes)` — HuggingFace sequence classification
+- `CLIPZeroShotClassifier(class_names, device)` — prompt-based, no training needed
+- `CLIPFewShotClassifier(num_classes, device)` — frozen CLIP encoder + trainable linear head
 
-**`src/models.py`** — All model architectures:
-- Image CNNs: ResNet-50, EfficientNet-B0 (torchvision pretrained)
-- Image ViTs: ViT-B/16, DeiT-Small (torchvision pretrained)
-- Text RNNs: BiLSTMClassifier, GRUClassifier (vocab-based embedding + bidirectional recurrent)
-- Text Transformers: DistilBERT, BERT-base (HuggingFace)
-- Multimodal: CLIPZeroShotClassifier (prompt-based), CLIPFewShotClassifier (frozen CLIP + trainable linear head)
+**`src/train.py`** — `train(model, train_loader, val_loader, num_epochs, lr, device, save_path, scheduler_type)`:
+- Handles both image batches `(images, labels)` and text batches `{"input_ids", "attention_mask", "label"}`
+- AdamW + gradient clipping (max_norm=1.0) + CosineAnnealingLR or ReduceLROnPlateau
+- AMP enabled on CUDA only; MPS/CPU runs without scaler
+- Returns `history` dict: `{train_loss, val_loss, train_acc, val_acc}`
 
-**`src/train.py`** — Unified training loop supporting both image batches (tuples) and text batches (dicts):
-- AdamW + gradient clipping
-- CosineAnnealingLR or ReduceLROnPlateau
-- Mixed-precision AMP (GPU only)
-- Early stopping with best-model checkpointing
-
-**`src/evaluate.py`** — Metrics (accuracy, F1-macro), confusion matrix, training curves, and comparison charts.
+**`src/evaluate.py`** — `get_predictions(model, loader, device)`, `compute_metrics(preds, labels)`, `plot_training_curves(history, model_name, save_path)`, `compare_models(results_dict, metric, save_path)`
 
 ### Notebook Workflow
 
-Notebooks in `notebooks/` are generated by `create_notebooks.py` and map to assignment tasks:
-- `01_eda_image.ipynb`, `02_eda_text.ipynb` — EDA
-- `04_image_cnn_vit.ipynb` — CNN vs ViT comparison on CIFAR-100
-- `05_text_rnn_transformer.ipynb` — BiLSTM vs BERT on 20 Newsgroups
+All 7 notebooks are auto-generated by `create_notebooks.py` — **do not edit `.ipynb` files directly**:
+- `01_eda_image.ipynb`, `02_eda_text.ipynb`, `03_eda_multimodal.ipynb` — EDA
+- `04_image_cnn_vit.ipynb` — CNN vs ViT comparison
+- `05_text_rnn_transformer.ipynb` — RNN vs Transformer comparison
 - `06_multimodal_zeroshot_fewshot.ipynb` — CLIP zero/few-shot
-- `07_extensions.ipynb` — Grad-CAM, error analysis, Gradio demo
+- `07_extensions.ipynb` — Grad-CAM, error analysis, Gradio demo (requires trained checkpoints)
 
-**Do not edit notebooks directly** — regenerate them via `create_notebooks.py`.
+Multimodal notebooks use CIFAR-100 superclasses (20 classes) as proxy dataset — no Flickr30k download needed.
+
+### ViT/DeiT Image Size
+
+`get_cifar100_loaders` uses `img_size=32` (CIFAR native). For ViT/DeiT (requires 224×224), `scripts/train_image.py` creates separate loaders with resize transforms automatically.
 
 ## CI/CD
 
-- **ci.yml**: Runs flake8 on `src/` and validates notebook JSON on every push/PR
-- **deploy-pages.yml**: Deploys `docs/` to GitHub Pages on push to main
-- **dependency-review.yml**: Scans PR dependencies for vulnerabilities
+- **ci.yml**: flake8 on `src/` + notebook JSON validation on every push/PR
+- **deploy-pages.yml**: deploys `docs/` to GitHub Pages on push to main
+- **dependency-review.yml**: scans PR dependencies for vulnerabilities
