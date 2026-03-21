@@ -52,3 +52,9 @@ desktop.ini
 .env
 *.env
 .venv/
+
+# Other
+__pycache__/
+*.ipynb_checkpoints/
+*notebooks/.gradio*
+*notebooks/data*
