@@ -170,17 +170,17 @@
         <div class="num">3</div>
         <div class="info">
           <div class="name">Xây dựng, Huấn luyện & Đánh giá Mô hình</div>
-          <div class="status">CNN, ViT, BiLSTM, BERT, CLIP</div>
+          <div class="status">ResNet-50, EfficientNet-B0, BiLSTM, GRU đã train · ViT, DeiT, DistilBERT, BERT đang chờ</div>
         </div>
-        <span class="status-badge todo">⏳ Todo</span>
+        <span class="status-badge wip">🔄 In progress</span>
       </a>
-      <a href="#" class="report-item">
+      <a href="#results" class="report-item">
         <div class="num">4</div>
         <div class="info">
           <div class="name">Kết quả Thực nghiệm</div>
-          <div class="status">Bảng số liệu, biểu đồ, phân tích và thảo luận</div>
+          <div class="status">ResNet-50 52.23% · EfficientNet 45.27% · GRU 37.35% · BiLSTM 30.64%</div>
         </div>
-        <span class="status-badge todo">⏳ Todo</span>
+        <span class="status-badge wip">🔄 In progress</span>
       </a>
       <a href="#" class="report-item">
         <div class="num">5</div>
@@ -195,17 +195,17 @@
 
   <div class="section" id="results">
     <h2>📊 Kết Quả Thực Nghiệm</h2>
-    <div class="sub">*(Sẽ được cập nhật sau khi hoàn thành thực nghiệm)*</div>
+    <div class="sub">Cập nhật lần cuối: 21/03/2026 · 5 epochs (image) · 5 epochs (text)</div>
 
     <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">🖼️ Image Classification (CIFAR-100)</h3>
     <div class="table-wrap" style="margin-bottom:2rem;">
       <table>
-        <thead><tr><th>Model</th><th>Type</th><th>Test Accuracy</th><th>F1-Macro</th><th>Params</th></tr></thead>
+        <thead><tr><th>Model</th><th>Type</th><th>Test Accuracy</th><th>F1-Macro</th><th>Params</th><th>Epochs</th></tr></thead>
         <tbody>
-          <tr><td>ResNet-50</td><td>CNN</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>25.6M</td></tr>
-          <tr><td>EfficientNet-B0</td><td>CNN</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>5.3M</td></tr>
-          <tr><td>ViT-B/16</td><td>ViT</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>86M</td></tr>
-          <tr><td>DeiT-S</td><td>ViT</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>22M</td></tr>
+          <tr><td>ResNet-50</td><td>CNN</td><td class="metric">52.23%</td><td class="metric">0.5185</td><td>25.6M</td><td>5</td></tr>
+          <tr><td>EfficientNet-B0</td><td>CNN</td><td class="metric">45.27%</td><td class="metric">0.4466</td><td>5.3M</td><td>5</td></tr>
+          <tr><td>ViT-B/16</td><td>ViT</td><td class="tbd">Chưa train</td><td class="tbd">—</td><td>86M</td><td>—</td></tr>
+          <tr><td>DeiT-S</td><td>ViT</td><td class="tbd">Chưa train</td><td class="tbd">—</td><td>22M</td><td>—</td></tr>
         </tbody>
       </table>
     </div>
@@ -213,12 +213,12 @@
     <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">📝 Text Classification (20 Newsgroups)</h3>
     <div class="table-wrap" style="margin-bottom:2rem;">
       <table>
-        <thead><tr><th>Model</th><th>Type</th><th>Test Accuracy</th><th>F1-Macro</th></tr></thead>
+        <thead><tr><th>Model</th><th>Type</th><th>Test Accuracy</th><th>F1-Macro</th><th>Epochs</th></tr></thead>
         <tbody>
-          <tr><td>BiLSTM</td><td>RNN</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>GRU</td><td>RNN</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>DistilBERT</td><td>Transformer</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>BERT-base</td><td>Transformer</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>BiLSTM</td><td>RNN</td><td class="metric">30.64%</td><td class="metric">0.2930</td><td>5</td></tr>
+          <tr><td>GRU</td><td>RNN</td><td class="metric">37.35%</td><td class="metric">0.3559</td><td>5</td></tr>
+          <tr><td>DistilBERT</td><td>Transformer</td><td class="tbd">Chưa train</td><td class="tbd">—</td><td>—</td></tr>
+          <tr><td>BERT-base</td><td>Transformer</td><td class="tbd">Chưa train</td><td class="tbd">—</td><td>—</td></tr>
         </tbody>
       </table>
     </div>
@@ -228,11 +228,11 @@
       <table>
         <thead><tr><th>Approach</th><th>Shots</th><th>Accuracy</th><th>F1-Macro</th></tr></thead>
         <tbody>
-          <tr><td>Zero-shot (CLIP)</td><td>0</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>Few-shot (CLIP + Linear)</td><td>1</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>Few-shot (CLIP + Linear)</td><td>5</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>Few-shot (CLIP + Linear)</td><td>10</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>Few-shot (CLIP + Linear)</td><td>20</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>Zero-shot (CLIP)</td><td>0</td><td class="tbd">Chưa train</td><td class="tbd">—</td></tr>
+          <tr><td>Few-shot (CLIP + Linear)</td><td>1</td><td class="tbd">Chưa train</td><td class="tbd">—</td></tr>
+          <tr><td>Few-shot (CLIP + Linear)</td><td>5</td><td class="tbd">Chưa train</td><td class="tbd">—</td></tr>
+          <tr><td>Few-shot (CLIP + Linear)</td><td>10</td><td class="tbd">Chưa train</td><td class="tbd">—</td></tr>
+          <tr><td>Few-shot (CLIP + Linear)</td><td>20</td><td class="tbd">Chưa train</td><td class="tbd">—</td></tr>
         </tbody>
       </table>
     </div>

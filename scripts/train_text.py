@@ -30,10 +30,10 @@ NUM_CLASSES = 20
 
 # (lr, epochs, batch_size)
 MODEL_CONFIGS = {
-    "bilstm":      (1e-3,  10, 64),
-    "gru":         (1e-3,  10, 64),
-    "distilbert":  (2e-5,  5,  32),
-    "bert":        (2e-5,  5,  16),
+    "bilstm":      (1e-3,  5, 64),
+    "gru":         (1e-3,  5, 64),
+    # "distilbert":  (2e-5,  3, 32),
+    # "bert":        (2e-5,  3, 16),
 }
 
 

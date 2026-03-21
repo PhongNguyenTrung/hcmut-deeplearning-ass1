@@ -34,20 +34,20 @@ NUM_CLASSES = 100
 MODEL_CONFIGS = {
     "resnet50": (
         lambda: get_resnet50(NUM_CLASSES, pretrained=True),
-        1e-3, 20, 128, 32,
+        1e-3, 5, 128, 32,
     ),
     "efficientnet": (
         lambda: get_efficientnet_b0(NUM_CLASSES, pretrained=True),
-        1e-3, 20, 128, 32,
+        1e-3, 5, 128, 32,
     ),
-    "vit_b16": (
-        lambda: get_vit_b16(NUM_CLASSES, pretrained=True),
-        2e-5, 15, 32, 224,
-    ),
-    "deit_small": (
-        lambda: get_deit_small(NUM_CLASSES, pretrained=True),
-        2e-5, 15, 32, 224,
-    ),
+    # "vit_b16": (
+    #     lambda: get_vit_b16(NUM_CLASSES, pretrained=True),
+    #     2e-5, 5, 32, 224,
+    # ),
+    # "deit_small": (
+    #     lambda: get_deit_small(NUM_CLASSES, pretrained=True),
+    #     2e-5, 5, 32, 224,
+    # ),
 }
 
 
