@@ -132,7 +132,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", choices=list(MODEL_CONFIGS.keys()), default=None,
                         help="Run a single model. Omit to run all.")
+    parser.add_argument("--epochs", type=int, default=None,
+                        help="Override number of epochs for all models.")
     args = parser.parse_args()
+
+    if args.epochs:
+        for k, (fn, lr, _, bs, img) in MODEL_CONFIGS.items():
+            MODEL_CONFIGS[k] = (fn, lr, args.epochs, bs, img)
 
     models_to_run = [args.model] if args.model else list(MODEL_CONFIGS.keys())
     all_results = {}
