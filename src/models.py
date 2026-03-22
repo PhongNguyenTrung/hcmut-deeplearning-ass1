@@ -11,7 +11,10 @@ from transformers import (
     ViTForImageClassification,
     ViTModel,
 )
-import clip
+try:
+    import clip
+except ImportError:
+    clip = None
 
 
 # ─────────────────────────────────────────────
