@@ -33,7 +33,7 @@ MODEL_CONFIGS = {
     "bilstm":      (1e-3,  5, 64),
     "gru":         (1e-3,  5, 64),
     "distilbert":  (2e-5,  3, 32),
-    "bert":        (2e-5,  3, 16),
+    # "bert":        (2e-5,  3, 16),
 }
 
 
