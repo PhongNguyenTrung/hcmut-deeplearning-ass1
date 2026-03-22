@@ -44,10 +44,10 @@ MODEL_CONFIGS = {
         lambda: get_vit_b16(NUM_CLASSES, pretrained=True),
         2e-5, 5, 32, 224,
     ),
-    "deit_small": (
-        lambda: get_deit_small(NUM_CLASSES, pretrained=True),
-        2e-5, 5, 32, 224,
-    ),
+    # "deit_small": (
+    #     lambda: get_deit_small(NUM_CLASSES, pretrained=True),
+    #     2e-5, 5, 32, 224,
+    # ),
 }
 
 
