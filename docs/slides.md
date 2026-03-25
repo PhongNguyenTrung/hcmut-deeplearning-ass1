@@ -30,7 +30,7 @@ style: |
 
 <!-- _class: title-slide -->
 
-# So sánh Kiến trúc Deep Learning
+# Phân loại Ảnh, Văn bản & Đa phương thức
 ## CNN vs. ViT · RNN vs. Transformer · Zero-shot vs. Few-shot
 
 <br>
@@ -52,9 +52,9 @@ style: |
 | 2 | Cơ sở lý thuyết (CNN, ViT, GRU, DistilBERT, CLIP) | 4–6 |
 | 3 | Tập dữ liệu & EDA | 7–8 |
 | 4 | **Dataset, DataLoader & Augmentation** | 9 |
-| 5 | **Task 1** – Phân loại ảnh: ResNet-50 vs. ViT-B/16 | 10–12 |
-| 6 | **Task 2** – Phân loại văn bản: GRU vs. DistilBERT | 13–15 |
-| 7 | **Task 3** – CLIP Zero-shot vs. Few-shot (Flickr30k) | 16–17 |
+| 5 | **Bài toán 1** – Phân loại ảnh: ResNet-50 vs. ViT-B/16 | 10–12 |
+| 6 | **Bài toán 2** – Phân loại văn bản: GRU vs. DistilBERT | 13–15 |
+| 7 | **Bài toán 3** – Phân loại đa phương thức: Zero-shot vs. Few-shot | 16–17 |
 | 8 | **Extensions** – Grad-CAM, Error Analysis, Fine-tune, Demo | 18–21 |
 | 9 | Thảo luận & Kết luận | 22–24 |
 
@@ -85,7 +85,7 @@ style: |
 
 ---
 
-## 2. Kiến trúc Image: CNN vs. ViT
+## 2. Kiến trúc Phân loại Ảnh: CNN vs. ViT
 
 ### ResNet-50 — CNN với Skip Connection
 
@@ -232,12 +232,12 @@ style: |
 
 <!-- _class: section-header -->
 
-# Task 1 – Phân loại Ảnh
-## ResNet-50 (CNN) vs. ViT-B/16 (Vision Transformer)
+# Bài toán 1 – Phân loại Ảnh
+## ResNet-50 (CNN) vs. ViT-B/16 (Vision Transformer) · CIFAR-100
 
 ---
 
-## 4. Task 1 – Cài đặt thực nghiệm
+## 4. Bài toán 1 – Cài đặt thực nghiệm
 
 | | ResNet-50 | ViT-B/16 |
 |---|---|---|
@@ -256,7 +256,7 @@ style: |
 
 ---
 
-## 4. Task 1 – Kết quả
+## 4. Bài toán 1 – Kết quả
 
 | Model | Test Accuracy | F1-Macro | Gap |
 |---|---|---|---|
@@ -274,7 +274,7 @@ style: |
 
 ---
 
-## 4. Task 1 – Training Curves
+## 4. Bài toán 1 – Training Curves
 
 - **ResNet-50**: val accuracy tăng ổn định, hội tụ nhanh ở epoch 3–4, dấu hiệu nhẹ overfitting cuối
 - **ViT-B/16**: khởi đầu chậm hơn (epoch 1–2 thấp), sau đó tăng nhanh mạnh — đặc trưng của Transformer cần "warm-up" để thích nghi với task mới
@@ -286,12 +286,12 @@ style: |
 
 <!-- _class: section-header -->
 
-# Task 2 – Phân loại Văn bản
-## GRU (RNN) vs. DistilBERT (Transformer)
+# Bài toán 2 – Phân loại Văn bản
+## GRU (RNN) vs. DistilBERT (Transformer) · 20 Newsgroups
 
 ---
 
-## 5. Task 2 – Cài đặt thực nghiệm
+## 5. Bài toán 2 – Cài đặt thực nghiệm
 
 | | GRU | DistilBERT |
 |---|---|---|
@@ -309,7 +309,7 @@ style: |
 
 ---
 
-## 5. Task 2 – Kết quả
+## 5. Bài toán 2 – Kết quả
 
 | Model | Test Accuracy | F1-Macro | Gap |
 |---|---|---|---|
@@ -329,7 +329,7 @@ style: |
 
 ---
 
-## 5. Task 2 – Training Curves
+## 5. Bài toán 2 – Training Curves
 
 - **GRU**: val accuracy đạt ~35–38% và bão hòa sớm — training loss tiếp tục giảm nhưng val loss tăng nhẹ → overfitting
 - **DistilBERT**: chỉ cần **3 epochs** để đạt 69% — tốc độ hội tụ vượt trội nhờ pretrained representations
@@ -341,12 +341,12 @@ style: |
 
 <!-- _class: section-header -->
 
-# Task 3 – Multimodal Learning
+# Bài toán 3 – Phân loại Đa phương thức
 ## CLIP Zero-shot vs. Few-shot · Flickr30k
 
 ---
 
-## 6. Task 3 – Phương pháp & Cài đặt
+## 6. Bài toán 3 – Phương pháp & Cài đặt
 
 **Dataset:** Flickr30k test split — 1,000 ảnh, **10 classes** (keyword labeling từ captions)
 
@@ -362,7 +362,7 @@ style: |
 
 ---
 
-## 6. Task 3 – Kết quả Zero-shot vs. Few-shot
+## 6. Bài toán 3 – Kết quả Zero-shot vs. Few-shot
 
 | Phương pháp | Train ảnh | **Accuracy** | **F1-Macro** |
 |---|---|---|---|
