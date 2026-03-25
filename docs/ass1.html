@@ -118,7 +118,7 @@
   <div class="hero">
     <div class="badge">Bài Tập Lớn #1 · CO5085</div>
     <h1>Phân loại Ảnh, Văn bản<br>& Đa phương thức</h1>
-    <p>So sánh <strong>CNN vs. ViT</strong> (ảnh) · <strong>RNN vs. Transformer</strong> (văn bản) · <strong>Zero-shot vs. Few-shot</strong> (đa phương thức)</p>
+    <p>So sánh <strong>CNN vs. ViT</strong> (ảnh) · <strong>RNN vs. Transformer</strong> (văn bản) · <strong>CLIP Zero-shot Retrieval</strong> trên Flickr30k</p>
   </div>
 
   <div class="links-section" id="links">
@@ -138,7 +138,7 @@
         <div class="title">Source Code</div>
         <div class="desc">Notebooks và modules Python</div>
       </a>
-      <a href="[LINK_SLIDE_PDF]" class="link-card coming" id="slide-link">
+      <a href="slides.pdf" class="link-card" id="slide-link">
         <div class="icon">📊</div>
         <div class="title">Slide PDF</div>
         <div class="desc">Slide trình bày tổng hợp</div>
@@ -154,7 +154,7 @@
         <div class="num">1</div>
         <div class="info">
           <div class="name">Báo cáo EDA – Khám phá Tập Dữ Liệu</div>
-          <div class="status">CIFAR-100 · 20 Newsgroups · CIFAR-100 Superclasses (proxy multimodal)</div>
+          <div class="status">CIFAR-100 · 20 Newsgroups · Flickr30k (1,000 ảnh × 5 captions)</div>
         </div>
         <span class="status-badge done">✅ Done</span>
       </a>
@@ -178,7 +178,7 @@
         <div class="num">4</div>
         <div class="info">
           <div class="name">Kết quả Thực nghiệm</div>
-          <div class="status">ViT-B/16 89.60% · CLIP 20-shot 93.00% · DistilBERT 69.04% · Biểu đồ so sánh đầy đủ</div>
+          <div class="status">ViT-B/16 89.60% · CLIP R@1=78.9% (Flickr30k) · DistilBERT 69.04% · Biểu đồ so sánh đầy đủ</div>
         </div>
         <span class="status-badge done">✅ Done</span>
       </a>
@@ -186,16 +186,16 @@
         <div class="num">5</div>
         <div class="info">
           <div class="name">Mở rộng: Grad-CAM, Error Analysis, Demo App</div>
-          <div class="status">Grad-CAM ResNet-50 · Confusion Matrix · Gradio Demo</div>
+          <div class="status">Grad-CAM ResNet-50 · Confusion Matrix · Fine-tune Strategy · Gradio Demo</div>
         </div>
-        <span class="status-badge wip">🔄 In progress</span>
+        <span class="status-badge done">✅ Done</span>
       </a>
     </div>
   </div>
 
   <div class="section" id="results">
     <h2>📊 Kết Quả Thực Nghiệm</h2>
-    <div class="sub">Cập nhật lần cuối: 22/03/2026 · Hoàn thành 7/7 model · Biểu đồ so sánh đã có đầy đủ</div>
+    <div class="sub">Cập nhật lần cuối: 25/03/2026 · Hoàn thành 7/7 model · Task 3: Flickr30k Retrieval</div>
 
     <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">🖼️ Image Classification (CIFAR-100)</h3>
     <div class="table-wrap" style="margin-bottom:2rem;">
@@ -223,19 +223,17 @@
       </table>
     </div>
 
-    <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">🔀 Multimodal (CIFAR-100 Superclasses / CLIP)</h3>
+    <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">🔀 Multimodal – CLIP Zero-shot Retrieval (Flickr30k)</h3>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Approach</th><th>Shots</th><th>Accuracy</th><th>F1-Macro</th></tr></thead>
+        <thead><tr><th>Hướng Retrieval</th><th>R@1</th><th>R@5</th><th>R@10</th></tr></thead>
         <tbody>
-          <tr><td>Zero-shot (CLIP)</td><td>0</td><td class="metric">54.60%</td><td class="metric">0.5173</td></tr>
-          <tr><td>Few-shot (CLIP + Linear)</td><td>1</td><td class="metric">32.80%</td><td class="metric">0.3383</td></tr>
-          <tr><td>Few-shot (CLIP + Linear)</td><td>5</td><td class="metric">61.20%</td><td class="metric">0.6221</td></tr>
-          <tr><td>Few-shot (CLIP + Linear)</td><td>10</td><td class="metric">76.40%</td><td class="metric">0.7655</td></tr>
-          <tr><td>Few-shot (CLIP + Linear)</td><td>20</td><td class="metric">93.00%</td><td class="metric">0.9322</td></tr>
+          <tr><td>Image → Text (I→T)</td><td class="metric">78.90%</td><td class="metric">94.90%</td><td class="metric">98.20%</td></tr>
+          <tr><td>Text → Image (T→I)</td><td class="metric">58.78%</td><td class="metric">83.48%</td><td class="metric">90.02%</td></tr>
         </tbody>
       </table>
     </div>
+    <p style="margin-top:0.8rem; font-size:0.82rem; color:var(--text-muted);">Dataset: Flickr30k test split · 1,000 ảnh × 5 captions = 5,000 pairs · Zero-shot, không training</p>
   </div>
 
   <footer>
