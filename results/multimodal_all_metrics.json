@@ -1,12 +1,7 @@
 {
-  "Image→Text": {
-    "R@1": 0.789,
-    "R@5": 0.949,
-    "R@10": 0.982
-  },
-  "Text→Image": {
-    "R@1": 0.5878,
-    "R@5": 0.8348,
-    "R@10": 0.9002
-  }
+  "Zero-shot": {"accuracy": 0.546, "f1_macro": 0.5173},
+  "1-shot":    {"accuracy": 0.328, "f1_macro": 0.3383},
+  "5-shot":    {"accuracy": 0.612, "f1_macro": 0.6221},
+  "10-shot":   {"accuracy": 0.764, "f1_macro": 0.7655},
+  "20-shot":   {"accuracy": 0.930, "f1_macro": 0.9322}
 }

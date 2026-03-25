@@ -37,7 +37,7 @@ style: |
 
 | | |
 |---|---|
-| **Môn học** | CO5085 – Deep Learning & Computer Vision Applications |
+| **Môn học** | CO5085 – Học sâu và ứng dụng trong thị giác máy tính |
 | **Sinh viên** | Nguyễn Trung Phong – MSSV: 2570047 |
 | **Giảng viên** | Lê Thành Sách |
 | **Học kỳ** | 2 / 2025–2026 – HCMUT |
@@ -53,7 +53,7 @@ style: |
 | 3 | Dữ liệu & Tiền xử lý (EDA) | 7–8 |
 | 4 | **Task 1** – Phân loại ảnh: ResNet-50 vs. ViT-B/16 | 9–11 |
 | 5 | **Task 2** – Phân loại văn bản: GRU vs. DistilBERT | 12–14 |
-| 6 | **Task 3** – CLIP Zero-shot Image–Text Retrieval (Flickr30k) | 15–16 |
+| 6 | **Task 3** – CLIP Zero-shot vs. Few-shot Classification (Flickr30k) | 15–16 |
 | 7 | **Extensions** – Grad-CAM, Error Analysis, Fine-tune, Demo | 17–20 |
 | 8 | Thảo luận & Kết luận | 21–23 |
 
@@ -73,7 +73,7 @@ style: |
 
 > **Q2.** GRU (RNN) hay DistilBERT (Transformer) tốt hơn trên 20 Newsgroups?
 
-> **Q3.** CLIP có thể tìm kiếm ảnh–văn bản (retrieval) hiệu quả trên dataset thật (Flickr30k) mà không cần training không?
+> **Q3.** CLIP có thể phân loại ảnh hiệu quả với 0 hoặc rất ít mẫu có nhãn trên dataset thật (Flickr30k) không?
 
 ---
 
@@ -147,7 +147,7 @@ style: |
 <!-- _class: section-header -->
 
 # Dữ liệu & Tiền xử lý
-## EDA – CIFAR-100 · 20 Newsgroups · Flickr30k
+## EDA – CIFAR-100 · 20 Newsgroups · Flickr30k (10 classes)
 
 ---
 
@@ -182,11 +182,12 @@ style: |
 - Độ dài văn bản dao động lớn (50 → 5,000+ từ) → truncate tại **max_length=256**
 - Phân phối class tương đối cân bằng (~550–600 bài/class)
 
-### Flickr30k (Multimodal Retrieval Dataset)
+### Flickr30k (Multimodal Dataset – 10 classes)
 
 - **31,783 ảnh** thật, mỗi ảnh có **5 captions** do con người viết
-- Test split chính thức: **1,000 ảnh × 5 captions = 5,000 pairs** (tải từ `AnyModal/flickr30k`)
-- Không cần gán nhãn — dùng trực tiếp cặp (ảnh, caption) làm ground truth cho retrieval
+- Test split: **1,000 ảnh** (tải từ `AnyModal/flickr30k`)
+- Gán nhãn từ captions bằng keyword matching → **10 semantic classes**: people, dog, water, sports, outdoor, horse, bicycle, food, nature, indoor
+- Mỗi ảnh đều có cặp (ảnh, caption) thật — đúng yêu cầu multimodal
 
 ![bg right:35% 95%](../results/newsgroups_class_dist.png)
 
@@ -304,44 +305,43 @@ style: |
 <!-- _class: section-header -->
 
 # Task 3 – Multimodal Learning
-## CLIP Zero-shot Image–Text Retrieval · Flickr30k
+## CLIP Zero-shot vs. Few-shot · Flickr30k
 
 ---
 
 ## 6. Task 3 – Phương pháp & Cài đặt
 
-**Dataset:** Flickr30k test split — 1,000 ảnh × 5 captions = **5,000 image–caption pairs**
+**Dataset:** Flickr30k test split — 1,000 ảnh, **10 classes** (keyword labeling từ captions)
 
-**Pipeline (zero-shot, không training):**
+| Phương pháp | Mô tả | Training data |
+|---|---|---|
+| **Zero-shot** | Prompt `"a photo of a {class}"` → cosine sim | **0 ảnh** |
+| **1-shot** | Linear head trên CLIP features | 10 ảnh (1/class) |
+| **5-shot** | Linear head trên CLIP features | 50 ảnh (5/class) |
+| **10-shot** | Linear head trên CLIP features | 100 ảnh (10/class) |
+| **20-shot** | Linear head trên CLIP features | 200 ảnh (20/class) |
 
-1. Encode 1,000 ảnh → $\mathbf{V} \in \mathbb{R}^{1000 \times 512}$ (L2-normalized)
-2. Encode 5,000 captions → $\mathbf{T} \in \mathbb{R}^{5000 \times 512}$ (L2-normalized)
-3. Similarity matrix $\mathbf{S} = \mathbf{V} \cdot \mathbf{T}^\top$
-
-**Đánh giá – Recall@K:**
-
-| Hướng | Ý nghĩa |
-|---|---|
-| **Image→Text** | Cho ảnh, tìm caption đúng trong 5,000 captions |
-| **Text→Image** | Cho caption, tìm ảnh đúng trong 1,000 ảnh |
+> CLIP encoder **frozen hoàn toàn** — chỉ train linear head $W \in \mathbb{R}^{512 \times 10}$
 
 ---
 
-## 6. Task 3 – Kết quả CLIP Retrieval
+## 6. Task 3 – Kết quả Zero-shot vs. Few-shot
 
-| Hướng Retrieval | **R@1** | **R@5** | **R@10** |
+| Phương pháp | Train ảnh | **Accuracy** | **F1-Macro** |
 |---|---|---|---|
-| **Image→Text (I→T)** | **78.90%** | **94.90%** | **98.20%** |
-| **Text→Image (T→I)** | **58.78%** | **83.48%** | **90.02%** |
+| Zero-shot | 0 | 54.60% | 0.517 |
+| 1-shot | 10 | 32.80% | 0.338 |
+| 5-shot | 50 | 61.20% | 0.622 |
+| 10-shot | 100 | 76.40% | 0.766 |
+| **20-shot** | **200** | **93.00%** | **0.932** |
 
 ### Phân tích
 
-- **I→T mạnh hơn T→I**: Mỗi ảnh có 5 captions ground truth → dễ hit top-K hơn; T→I chỉ có 1 ảnh đúng trong 1,000 → khó hơn
-- **R@1 I→T = 78.9%** zero-shot — không training, không labeled data → CLIP embedding space đủ phân ly
-- **R@10 I→T = 98.2%**: Gần như luôn tìm được caption đúng trong top-10
-- Kém SOTA có supervision (~90%+ R@1) khoảng 11 điểm — trade-off hoàn toàn hợp lý khi **không cần training**
+- **1-shot < Zero-shot**: 1 ảnh/class không đủ ước lượng phân phối → linear head overfit
+- **5-shot** vượt zero-shot: đủ signal để học phân tách
+- **20-shot = 93%** với chỉ 200 ảnh train → CLIP features **cực kỳ phân ly**
 
-![bg right:35% 95%](../results/multimodal_retrieval.png)
+![bg right:35% 95%](../results/multimodal_comparison_acc.png)
 
 ---
 
@@ -465,13 +465,13 @@ demo.launch()
 |---|---|---|---|
 | Phân loại ảnh | ResNet-50: 44.11% | ViT-B/16: **89.60%** | ViT-B/16 (+45.5 pp) |
 | Phân loại văn bản | GRU: 37.85% | DistilBERT: **69.04%** | DistilBERT (+31.2 pp) |
-| Multimodal retrieval | — | CLIP zero-shot: **R@1=78.9%** (I→T) | CLIP (0 ảnh train) |
+| Multimodal few-shot | — | CLIP 20-shot: **93.00%** | CLIP (200 ảnh train) |
 
 ### Ba kết luận chính
 
 1. **Transformer vượt CNN và RNN** trên cả 3 domain nhờ self-attention toàn cục và pre-training quy mô lớn
 2. **Pre-trained weights** là yếu tố then chốt — fine-tuning từ pretrained vượt train từ đầu rất xa
-3. **CLIP zero-shot** đạt R@1 = 78.9% (I→T) trên Flickr30k mà không cần training — sức mạnh của contrastive pre-training 400M cặp ảnh–văn bản
+3. **CLIP few-shot** đạt 93% accuracy với chỉ 200 ảnh train (20-shot); zero-shot đạt 54.6% mà không cần bất kỳ dữ liệu training nào
 
 ---
 

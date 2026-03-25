@@ -178,7 +178,7 @@
         <div class="num">4</div>
         <div class="info">
           <div class="name">Kết quả Thực nghiệm</div>
-          <div class="status">ViT-B/16 89.60% · CLIP R@1=78.9% (Flickr30k) · DistilBERT 69.04% · Biểu đồ so sánh đầy đủ</div>
+          <div class="status">ViT-B/16 89.60% · CLIP 20-shot 93.00% (Flickr30k) · DistilBERT 69.04% · Biểu đồ so sánh đầy đủ</div>
         </div>
         <span class="status-badge done">✅ Done</span>
       </a>
@@ -219,17 +219,20 @@
       </table>
     </div>
 
-    <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">🔀 Multimodal – CLIP Zero-shot Retrieval (Flickr30k)</h3>
+    <h3 style="font-size:1rem; margin-bottom:0.8rem; color:#a5b4fc;">🔀 Multimodal – CLIP Zero-shot vs. Few-shot (Flickr30k, 10 classes)</h3>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Hướng Retrieval</th><th>R@1</th><th>R@5</th><th>R@10</th></tr></thead>
+        <thead><tr><th>Phương pháp</th><th>Train ảnh</th><th>Accuracy</th><th>F1-Macro</th></tr></thead>
         <tbody>
-          <tr><td>Image → Text (I→T)</td><td class="metric">78.90%</td><td class="metric">94.90%</td><td class="metric">98.20%</td></tr>
-          <tr><td>Text → Image (T→I)</td><td class="metric">58.78%</td><td class="metric">83.48%</td><td class="metric">90.02%</td></tr>
+          <tr><td>Zero-shot</td><td>0</td><td class="metric">54.60%</td><td class="metric">0.5173</td></tr>
+          <tr><td>1-shot</td><td>10</td><td class="metric">32.80%</td><td class="metric">0.3383</td></tr>
+          <tr><td>5-shot</td><td>50</td><td class="metric">61.20%</td><td class="metric">0.6221</td></tr>
+          <tr><td>10-shot</td><td>100</td><td class="metric">76.40%</td><td class="metric">0.7655</td></tr>
+          <tr><td><strong>20-shot</strong></td><td><strong>200</strong></td><td class="metric"><strong>93.00%</strong></td><td class="metric"><strong>0.9322</strong></td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:0.8rem; font-size:0.82rem; color:var(--text-muted);">Dataset: Flickr30k test split · 1,000 ảnh × 5 captions = 5,000 pairs · Zero-shot, không training</p>
+    <p style="margin-top:0.8rem; font-size:0.82rem; color:var(--text-muted);">Dataset: Flickr30k test split · 1,000 ảnh · 10 classes (keyword labeling) · CLIP ViT-B/32</p>
   </div>
 
   <footer>

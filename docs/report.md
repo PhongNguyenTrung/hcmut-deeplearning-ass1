@@ -27,7 +27,7 @@ Bài tập lớn này đặt ra ba câu hỏi nghiên cứu:
 
 1. **CNN vs. ViT:** Kiến trúc Vision Transformer có vượt trội CNN trong bài toán phân loại ảnh fine-grained (CIFAR-100) hay không?
 2. **RNN vs. Transformer:** DistilBERT có thực sự mạnh hơn GRU trong phân loại văn bản ngắn không?
-3. **Zero-shot Retrieval:** CLIP có thể tìm kiếm ảnh–văn bản hiệu quả trên dataset thật (Flickr30k) mà không cần training không?
+3. **Zero-shot vs. Few-shot:** CLIP có thể phân loại hiệu quả khi chỉ có 0 hoặc rất ít mẫu có nhãn trên dataset thật (Flickr30k) không?
 
 Báo cáo được tổ chức như sau: Mục 2 trình bày tổng quan lý thuyết; Mục 3 mô tả dữ liệu và tiền xử lý; Mục 4 trình bày kiến trúc và phương pháp thực nghiệm; Mục 5 phân tích kết quả; Mục 6 trình bày các thí nghiệm mở rộng; Mục 7 thảo luận và Mục 8 kết luận.
 
@@ -76,14 +76,13 @@ CIFAR-100 (Krizhevsky & Hinton, 2009) gồm 60,000 ảnh màu 32×32 thuộc 100
 - **DistilBERT:** sử dụng `DistilBertTokenizer` (vocab 30,522 từ), `max_length=256`, padding + truncation, batch size 32
 - **GRU:** sử dụng cùng tokenizer nhưng dùng embeddings thô (vocab_size=30,522, embed_dim=300), max_length=256, batch size 64
 
-### 3.3 Flickr30k (Multimodal Retrieval)
+### 3.3 Flickr30k (Multimodal Classification)
 
-**Flickr30k** (Young et al., 2014) là benchmark chuẩn cho bài toán image–text retrieval. Dataset gồm 31,783 ảnh, mỗi ảnh đi kèm 5 captions mô tả nội dung thật do con người viết. Chúng tôi sử dụng **test split chính thức** (1,000 ảnh × 5 captions = 5,000 cặp ảnh–văn bản) được tải từ HuggingFace (`AnyModal/flickr30k`).
+**Flickr30k** (Young et al., 2014) gồm 31,783 ảnh thật, mỗi ảnh đi kèm 5 captions mô tả nội dung do con người viết. Chúng tôi sử dụng **test split** (1,000 ảnh) tải từ HuggingFace (`AnyModal/flickr30k`).
 
-**Đặc điểm dataset:**
-- Ảnh màu độ phân giải cao (trung bình ~500×400 px), nội dung đa dạng: người, động vật, phong cảnh, hoạt động ngoài trời
-- Mỗi ảnh có đúng 5 captions viết độc lập → ground truth rõ ràng cho đánh giá retrieval
-- Không cần gán nhãn thủ công — dùng trực tiếp cặp (ảnh, caption) làm ground truth
+**Gán nhãn từ captions (keyword matching):** Do Flickr30k không có nhãn phân loại sẵn, chúng tôi gán nhãn bằng keyword matching trên captions → **10 semantic classes**: *people, dog, water, sports, outdoor, horse, bicycle, food, nature, indoor*. Mỗi ảnh được lấy tối đa 60 ảnh/class để đảm bảo cân bằng.
+
+**Tại sao hợp lệ:** Mỗi ảnh đều có cặp (ảnh, caption) thật mô tả cùng nội dung — đúng với ràng buộc đa phương thức. Keyword labeling cũng là cách tiêu chuẩn để tạo pseudo-labels từ text supervision.
 
 ---
 
@@ -107,21 +106,14 @@ Cả hai mô hình sử dụng pretrained weights (ImageNet-1K cho ResNet-50, Im
 
 GRU được khởi tạo ngẫu nhiên (không dùng pretrained embeddings), trong khi DistilBERT sử dụng toàn bộ pretrained weights từ HuggingFace.
 
-### 4.3 Multimodal Learning (CLIP – Image–Text Retrieval)
+### 4.3 Multimodal Learning (CLIP – Zero-shot vs. Few-shot)
 
-**CLIP ViT-B/32** (151M tham số) với cả image encoder và text encoder được frozen hoàn toàn — không fine-tune, không cần dữ liệu có nhãn.
+**CLIP ViT-B/32** (151M tham số) trên Flickr30k test set (1,000 ảnh, 10 classes).
 
-**Task: Zero-shot Image–Text Retrieval** trên Flickr30k test set (1,000 ảnh, 5,000 captions).
+- **Zero-shot:** Với mỗi class $c$, tạo text prompt `"a photo of a {c}"`, encode thành $\mathbf{t}_c$. Dự đoán: $\hat{y} = \arg\max_c \text{cosine}(\mathbf{v}, \mathbf{t}_c)$. Không cần ảnh training.
+- **Few-shot (K-shot):** Train linear classifier $W \in \mathbb{R}^{512 \times 10}$ trên $K$ ảnh/class với frozen CLIP features. K ∈ {1, 5, 10, 20}.
 
-**Phương pháp:**
-1. Encode toàn bộ 1,000 ảnh → ma trận $\mathbf{V} \in \mathbb{R}^{1000 \times 512}$ (L2-normalized)
-2. Encode toàn bộ 5,000 captions → ma trận $\mathbf{T} \in \mathbb{R}^{5000 \times 512}$ (L2-normalized)
-3. Tính similarity matrix $\mathbf{S} = \mathbf{V} \cdot \mathbf{T}^\top \in \mathbb{R}^{1000 \times 5000}$
-
-**Đánh giá – Recall@K:**
-- **Image→Text (I→T):** Với mỗi ảnh, rank 5,000 captions theo similarity → kiểm tra có caption đúng trong top-K không
-- **Text→Image (T→I):** Với mỗi caption, rank 1,000 ảnh theo similarity → kiểm tra có ảnh đúng trong top-K không
-- K ∈ {1, 5, 10}
+**Đánh giá:** Accuracy và F1-Macro trên toàn bộ test set.
 
 ### 4.4 Cấu hình Huấn luyện
 
@@ -163,26 +155,27 @@ Tất cả thí nghiệm được thực hiện trên Apple M-series (MPS backen
 
 ![Text Classification Comparison](../results/text_comparison_acc.png)
 
-### 5.3 Multimodal Learning (CLIP – Flickr30k Retrieval)
+### 5.3 Multimodal Learning (CLIP – Flickr30k Zero-shot vs. Few-shot)
 
-**CLIP ViT-B/32 Zero-shot Retrieval** trên Flickr30k test set (1,000 ảnh, 5,000 captions):
+**CLIP ViT-B/32** trên Flickr30k test set (10 classes, keyword labeling):
 
-| Hướng Retrieval | R@1 | R@5 | R@10 |
+| Phương pháp | Train ảnh | Test Accuracy | F1-Macro |
 |---|---|---|---|
-| **Image→Text (I→T)** | **78.90%** | **94.90%** | **98.20%** |
-| **Text→Image (T→I)** | **58.78%** | **83.48%** | **90.02%** |
+| Zero-shot | 0 | 54.60% | 0.517 |
+| Few-shot 1-shot | 10 | 32.80% | 0.338 |
+| Few-shot 5-shot | 50 | 61.20% | 0.622 |
+| Few-shot 10-shot | 100 | 76.40% | 0.766 |
+| **Few-shot 20-shot** | **200** | **93.00%** | **0.932** |
 
 **Phân tích:**
 
-- **Image→Text mạnh hơn Text→Image**: Một ảnh có thể được mô tả bởi nhiều captions khác nhau (5 captions/ảnh) → CLIP dễ tìm được ít nhất 1 caption đúng trong top-K. Ngược lại, từ 1 caption cụ thể cần tìm đúng 1 ảnh trong pool 1,000 ảnh → bài toán khó hơn.
+- **1-shot (32.80%) < Zero-shot (54.60%)**: Với chỉ 1 ảnh/class, linear head không có đủ dữ liệu để ước lượng phân phối của class → overfit nghiêm trọng. Zero-shot hoạt động tốt hơn nhờ tận dụng toàn bộ prior knowledge của CLIP từ 400M cặp ảnh–văn bản.
 
-- **R@1 = 78.9% (I→T)** là kết quả ấn tượng cho zero-shot — không training, không labeled data. Điều này cho thấy CLIP đã học được correspondence giữa visual concepts và ngôn ngữ tự nhiên đủ tốt để retrieve trực tiếp.
+- **Từ 5-shot trở lên** vượt zero-shot và tăng đều đặn. CLIP features rất phân ly nên chỉ cần ít ví dụ là linear head học được hyperplane phân tách tốt.
 
-- **R@10 = 98.2% (I→T)**: Trong 10 captions được retrieve đầu tiên, 98.2% trường hợp có caption đúng — cho thấy embedding space của CLIP phân ly rất tốt giữa các ảnh khác nhau.
+- **20-shot đạt 93.00%** với chỉ 200 ảnh train — minh chứng cho chất lượng representation của CLIP.
 
-- So với **SOTA có supervision** trên Flickr30k (R@1 I→T ≈ 90%+), CLIP zero-shot (78.9%) vẫn kém hơn ~10 điểm, nhưng **không cần training gì cả** — đây là trade-off hợp lý.
-
-![Multimodal Retrieval](../results/multimodal_retrieval.png)
+![Multimodal Comparison](../results/multimodal_comparison_acc.png)
 
 ---
 
@@ -232,9 +225,9 @@ Kết quả thực nghiệm trên cả ba domain đều xác nhận xu hướng 
 
 GRU (~4M params) và DistilBERT (66M params) chênh nhau ~16× về số tham số, nhưng DistilBERT vượt trội về accuracy (+31.2 điểm). Điều này cho thấy với bài toán NLP, **chất lượng pre-training** quan trọng hơn nhiều so với kích thước mô hình đơn thuần — GRU khởi tạo ngẫu nhiên không thể cạnh tranh với một Transformer đã được pre-train trên hàng chục GB văn bản, dù nhỏ hơn gấp nhiều lần.
 
-### 7.3 CLIP và Zero-shot Retrieval
+### 7.3 CLIP và Học Ít Mẫu
 
-Kết quả R@1 = 78.9% (I→T) trên Flickr30k mà không cần training cho thấy CLIP đã học được một không gian embedding chung rất mạnh từ 400M cặp ảnh–văn bản. Điều này mở ra hướng ứng dụng quan trọng: trong các hệ thống tìm kiếm ảnh bằng văn bản (visual search), CLIP có thể được dùng trực tiếp như một backbone mạnh mà không cần fine-tune trên domain cụ thể.
+Kết quả 93% accuracy với chỉ 200 ảnh train (20-shot) cho thấy CLIP features cực kỳ phong phú và phân ly tốt. Zero-shot đạt 54.6% mà không cần training — tận dụng hoàn toàn prior knowledge từ 400M cặp ảnh–văn bản. Trong các domain thiếu dữ liệu có nhãn, few-shot learning với CLIP features là giải pháp thực tế hơn so với fine-tuning đầy đủ.
 
 ### 7.4 Hạn chế
 
@@ -252,12 +245,12 @@ Nghiên cứu này đã so sánh toàn diện các kiến trúc deep learning tr
 |---|---|---|
 | Image Classification | ViT-B/16 | Accuracy = **89.60%** |
 | Text Classification | DistilBERT | Accuracy = **69.04%** |
-| Multimodal Retrieval | CLIP Zero-shot | R@1 (I→T) = **78.9%** |
+| Multimodal Few-shot | CLIP 20-shot | Accuracy = **93.00%** |
 
 **Kết luận chính:**
 1. Transformer vượt trội CNN và RNN ở cả ba domain, chủ yếu nhờ cơ chế self-attention toàn cục và pre-training quy mô lớn
 2. Pre-trained weights là yếu tố then chốt: fine-tuning mô hình pretrained hiệu quả hơn nhiều so với train từ đầu
-3. CLIP zero-shot đạt R@1 = 78.9% (I→T) trên Flickr30k mà không cần bất kỳ dữ liệu training nào — minh chứng cho sức mạnh của contrastive pre-training quy mô lớn
+3. CLIP few-shot đạt 93% accuracy với 200 ảnh train; zero-shot đạt 54.6% không cần training — minh chứng cho sức mạnh của contrastive pre-training quy mô lớn
 
 **Hướng phát triển tiếp theo:**
 - Tăng số epochs và sử dụng stronger augmentation (MixUp, CutMix) cho ResNet-50 để đánh giá công bằng hơn
