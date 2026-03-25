@@ -1,9 +1,9 @@
 """
-train_image.py – Train all 4 image models on CIFAR-100.
+train_image.py – Train image models (ResNet-50, ViT-B/16) on CIFAR-100.
 CO5085 – Assignment 1
 
 Run:
-    python scripts/train_image.py              # all 4 models
+    python scripts/train_image.py              # all models
     python scripts/train_image.py --model resnet50
 """
 
@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from datasets import get_cifar100_loaders, get_image_transforms
 from evaluate import compute_metrics, get_predictions, plot_training_curves
-from models import get_deit_small, get_efficientnet_b0, get_resnet50, get_vit_b16
+from models import get_resnet50, get_vit_b16
 from train import train
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results")
@@ -36,18 +36,10 @@ MODEL_CONFIGS = {
         lambda: get_resnet50(NUM_CLASSES, pretrained=True),
         1e-3, 5, 128, 32,
     ),
-    "efficientnet": (
-        lambda: get_efficientnet_b0(NUM_CLASSES, pretrained=True),
-        1e-3, 5, 128, 32,
-    ),
     "vit_b16": (
         lambda: get_vit_b16(NUM_CLASSES, pretrained=True),
         2e-5, 5, 32, 224,
     ),
-    # "deit_small": (
-    #     lambda: get_deit_small(NUM_CLASSES, pretrained=True),
-    #     2e-5, 5, 32, 224,
-    # ),
 }
 
 

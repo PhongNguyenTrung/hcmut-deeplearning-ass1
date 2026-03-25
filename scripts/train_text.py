@@ -1,9 +1,9 @@
 """
-train_text.py – Train all 4 text models on 20 Newsgroups.
+train_text.py – Train text models (GRU, DistilBERT) on 20 Newsgroups.
 CO5085 – Assignment 1
 
 Run:
-    python scripts/train_text.py              # all 4 models
+    python scripts/train_text.py              # all models
     python scripts/train_text.py --model distilbert
 """
 
@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from datasets import get_20newsgroups_loaders
 from evaluate import compute_metrics, get_predictions, plot_training_curves
-from models import BiLSTMClassifier, GRUClassifier, get_bert, get_distilbert
+from models import GRUClassifier, get_distilbert
 from train import train
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results")
@@ -30,22 +30,16 @@ NUM_CLASSES = 20
 
 # (lr, epochs, batch_size)
 MODEL_CONFIGS = {
-    "bilstm":      (1e-3,  5, 64),
-    "gru":         (1e-3,  5, 64),
-    "distilbert":  (2e-5,  3, 32),
-    # "bert":        (2e-5,  3, 16),
+    "gru":        (1e-3, 5, 64),
+    "distilbert": (2e-5, 3, 32),
 }
 
 
 def build_model(name, vocab_size):
-    if name == "bilstm":
-        return BiLSTMClassifier(vocab_size=vocab_size, num_classes=NUM_CLASSES)
     if name == "gru":
         return GRUClassifier(vocab_size=vocab_size, num_classes=NUM_CLASSES)
     if name == "distilbert":
         return get_distilbert(NUM_CLASSES)
-    if name == "bert":
-        return get_bert(NUM_CLASSES)
     raise ValueError(f"Unknown model: {name}")
 
 
@@ -97,8 +91,8 @@ def main():
     all_results = {}
 
     for name in models_to_run:
-        _, epochs, batch_size = MODEL_CONFIGS[name]
-        tokenizer_name = "bert-base-uncased" if name == "bert" else "distilbert-base-uncased"
+        _, _, batch_size = MODEL_CONFIGS[name]
+        tokenizer_name = "distilbert-base-uncased"
         train_loader, val_loader, test_loader, tokenizer, _ = get_20newsgroups_loaders(
             tokenizer_name=tokenizer_name,
             batch_size=batch_size,

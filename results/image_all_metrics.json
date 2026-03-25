@@ -1,13 +1,9 @@
 {
-  "resnet50": {
+  "ResNet-50": {
     "accuracy": 0.4411,
     "f1_macro": 0.4339789210502954
   },
-  "efficientnet": {
-    "accuracy": 0.4555,
-    "f1_macro": 0.44826537877756434
-  },
-  "vit_b16": {
+  "ViT-B/16": {
     "accuracy": 0.896,
     "f1_macro": 0.8958923383597082
   }

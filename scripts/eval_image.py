@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from datasets import get_cifar100_loaders
 from evaluate import compute_metrics, get_predictions
-from models import get_deit_small, get_efficientnet_b0, get_resnet50, get_vit_b16
+from models import get_resnet50, get_vit_b16
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results")
 DEVICE = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
@@ -28,10 +28,8 @@ NUM_WORKERS = 0 if DEVICE == "mps" else 2
 NUM_CLASSES = 100
 
 MODEL_CONFIGS = {
-    "resnet50":    (lambda: get_resnet50(NUM_CLASSES, pretrained=False),    128, 32),
-    "efficientnet": (lambda: get_efficientnet_b0(NUM_CLASSES, pretrained=False), 128, 32),
-    "vit_b16":     (lambda: get_vit_b16(NUM_CLASSES, pretrained=False),     32, 224),
-    "deit_small":  (lambda: get_deit_small(NUM_CLASSES, pretrained=False),  32, 224),
+    "resnet50": (lambda: get_resnet50(NUM_CLASSES, pretrained=False), 128, 32),
+    "vit_b16":  (lambda: get_vit_b16(NUM_CLASSES, pretrained=False),  32, 224),
 }
 
 
