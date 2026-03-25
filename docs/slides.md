@@ -50,12 +50,13 @@ style: |
 |---|---|---|
 | 1 | Bối cảnh & Câu hỏi nghiên cứu | 3 |
 | 2 | Cơ sở lý thuyết (CNN, ViT, GRU, DistilBERT, CLIP) | 4–6 |
-| 3 | Dữ liệu & Tiền xử lý (EDA) | 7–8 |
-| 4 | **Task 1** – Phân loại ảnh: ResNet-50 vs. ViT-B/16 | 9–11 |
-| 5 | **Task 2** – Phân loại văn bản: GRU vs. DistilBERT | 12–14 |
-| 6 | **Task 3** – CLIP Zero-shot vs. Few-shot Classification (Flickr30k) | 15–16 |
-| 7 | **Extensions** – Grad-CAM, Error Analysis, Fine-tune, Demo | 17–20 |
-| 8 | Thảo luận & Kết luận | 21–23 |
+| 3 | Tập dữ liệu & EDA | 7–8 |
+| 4 | **Dataset, DataLoader & Augmentation** | 9 |
+| 5 | **Task 1** – Phân loại ảnh: ResNet-50 vs. ViT-B/16 | 10–12 |
+| 6 | **Task 2** – Phân loại văn bản: GRU vs. DistilBERT | 13–15 |
+| 7 | **Task 3** – CLIP Zero-shot vs. Few-shot (Flickr30k) | 16–17 |
+| 8 | **Extensions** – Grad-CAM, Error Analysis, Fine-tune, Demo | 18–21 |
+| 9 | Thảo luận & Kết luận | 22–24 |
 
 ---
 
@@ -190,6 +191,42 @@ style: |
 - Mỗi ảnh đều có cặp (ảnh, caption) thật — đúng yêu cầu multimodal
 
 ![bg right:35% 95%](../results/newsgroups_class_dist.png)
+
+---
+
+<!-- _class: section-header -->
+
+# Dataset, DataLoader & Augmentation
+
+---
+
+## 4. Dataset, DataLoader & Augmentation
+
+### Image – CIFAR-100
+
+| | Cấu hình |
+|---|---|
+| **Train/Val/Test** | 40,000 / 10,000 / 10,000 (split 80/20 từ train gốc) |
+| **Batch size** | ResNet-50: 128 · ViT-B/16: 64 |
+| **Augmentation (train)** | `RandomCrop(32, pad=4)` → `RandomHorizontalFlip` → `ColorJitter(0.2)` → `Normalize` |
+| **Val/Test** | `ToTensor` → `Normalize` (không augment) |
+| **ViT resize** | Thêm `Resize(256)` → `CenterCrop(224)` |
+
+### Text – 20 Newsgroups
+
+| | Cấu hình |
+|---|---|
+| **Train/Val/Test** | ~9,617 / ~1,697 / 7,532 |
+| **Tokenizer** | `DistilBertTokenizer` (vocab 30,522) |
+| **max\_length** | 256 tokens · padding + truncation |
+| **Batch size** | DistilBERT: 32 · GRU: 64 |
+
+### Multimodal – Flickr30k
+
+| | Cấu hình |
+|---|---|
+| **Test set** | 1,000 ảnh · keyword labeling → 10 classes (max 60/class) |
+| **CLIP preprocess** | `Resize(224)` → `CenterCrop(224)` → `Normalize` (CLIP chuẩn) |
 
 ---
 
