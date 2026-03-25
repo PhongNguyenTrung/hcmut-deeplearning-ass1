@@ -55,8 +55,7 @@ style: |
 | 5 | **Bài toán 1** – Phân loại ảnh: ResNet-50 vs. ViT-B/16 | 10–12 |
 | 6 | **Bài toán 2** – Phân loại văn bản: GRU vs. DistilBERT | 13–15 |
 | 7 | **Bài toán 3** – Phân loại đa phương thức: Zero-shot vs. Few-shot | 16–17 |
-| 8 | **Extensions** – Grad-CAM, Error Analysis, Fine-tune, Demo | 18–21 |
-| 9 | Thảo luận & Kết luận | 22–24 |
+| 8 | Kết quả tổng hợp & Kết luận | 18–19 |
 
 ---
 
@@ -252,7 +251,7 @@ style: |
 | **Scheduler** | CosineAnnealingLR | CosineAnnealingLR |
 | **Gradient clipping** | max_norm=1.0 | max_norm=1.0 |
 
-> Cả hai được fine-tune toàn bộ trên CIFAR-100. Hardware: Apple M-series (MPS, float32).
+> Cả hai được fine-tune toàn bộ trên CIFAR-100.
 
 ---
 
@@ -384,125 +383,17 @@ style: |
 
 <!-- _class: section-header -->
 
-# Extensions
-## Grad-CAM · Error Analysis · Fine-tuning · Demo
+# Kết quả tổng hợp & Kết luận
 
 ---
 
-## 7. Extension 1 – Grad-CAM: Khả năng Diễn giải CNN
+## 8. Kết quả tổng hợp & Kết luận
 
-**Gradient-weighted Class Activation Mapping** (Selvaraju et al., 2017)
-
-**Nguyên lý:** Tính gradient của class score theo feature map của `layer4` → weighted sum → heatmap vị trí quan trọng
-
-$$L^c_{\text{Grad-CAM}} = \text{ReLU}\!\left(\sum_k \alpha_k^c A^k\right), \quad \alpha_k^c = \frac{1}{Z}\sum_{i,j}\frac{\partial y^c}{\partial A^k_{ij}}$$
-
-**Kết quả trên ResNet-50:**
-- Heatmap bao phủ đúng **vùng đối tượng chính** — không bị thu hút bởi background
-- Layer cuối (`layer4`) học đặc trưng **ngữ nghĩa cấp cao** (hình dạng tổng thể), không phải texture/màu sắc
-- Cho thấy mô hình học đúng cách — không shortcut vào background
-
-![bg right:42% 95%](../results/gradcam_resnet50.png)
-
----
-
-## 7. Extension 2 – Error Analysis: Phân tích Lỗi ResNet-50
-
-**Confusion matrix** của ResNet-50 trên 100 class CIFAR-100:
-
-**Xu hướng lỗi chính:**
-- Phần lớn lỗi xảy ra **trong cùng superclass**: nhầm `beaver` ↔ `otter` (small mammals), `bus` ↔ `train` (vehicles)
-- Ít lỗi xuyên superclass: không nhầm `dog` với `airplane`
-- Điều này cho thấy mô hình đã học được phân biệt ở mức **superclass** nhưng chưa đủ tinh tế ở **fine-grained**
-
-**Nguyên nhân:** Độ phân giải 32×32 quá thấp — các class cùng superclass trông gần như giống nhau ở kích thước này
-
-![bg right:45% 95%](../results/confusion_matrix_resnet50.png)
-
----
-
-## 7. Extension 3 – Fine-tuning Strategies
-
-So sánh hai chiến lược trên ResNet-50 (CIFAR-100):
-
-| Chiến lược | Params được update | Đặc điểm | Khi nào dùng |
-|---|---|---|---|
-| **Freeze Backbone** | Chỉ classification head (~200K) | Hội tụ nhanh, tránh catastrophic forgetting | Dataset nhỏ (<10K), tính toán hạn chế |
-| **Full Fine-tune** | Toàn bộ 25.6M params | Accuracy cao hơn, cần lr nhỏ và gradient clipping | Dataset đủ lớn (≥50K), như CIFAR-100 |
-
-**Kết quả:** Full Fine-tune cho accuracy cao hơn rõ rệt với 50K ảnh train — toàn bộ feature extractor được tối ưu cho domain 32×32 CIFAR.
-
-**Rủi ro của Full Fine-tune:** Learning rate quá lớn có thể phá vỡ pretrained features → dùng **CosineAnnealingLR** + **gradient clipping (max_norm=1.0)** để ổn định.
-
-> **Khuyến nghị thực tế:** Freeze backbone trước 1–2 epochs để "warm-up" head, rồi unfreeze toàn bộ — giảm nguy cơ catastrophic forgetting.
-
----
-
-## 7. Extension 4 – Gradio Demo App
-
-Ứng dụng demo tương tác được xây dựng bằng **Gradio**, tích hợp ResNet-50 đã fine-tune (44.11% test accuracy):
-
-**Tính năng:**
-- Upload bất kỳ ảnh nào → nhận **Top-5 predictions** + confidence score
-- Preprocessing pipeline đồng nhất với evaluation: `Resize(40)` → `CenterCrop(32)` → `Normalize`
-- Hiển thị class name của 100 class CIFAR-100
-
-**Mục đích:** Minh họa trực quan việc triển khai (deployment) mô hình deep learning vào ứng dụng thực tế — từ checkpoint `.pt` đến API có thể dùng ngay.
-
-```python
-demo = gr.Interface(
-    fn=predict,           # ResNet-50 inference pipeline
-    inputs=gr.Image(...), # Upload ảnh
-    outputs=gr.Label(5),  # Top-5 class + probability
-)
-demo.launch()
-```
-
----
-
-## 8. Thảo luận – So sánh Toàn diện
-
-| | ResNet-50 | ViT-B/16 | GRU | DistilBERT |
-|---|---|---|---|---|
-| **Kiến trúc** | Local conv | Global attention | Sequential RNN | Global attention |
-| **Tham số** | 25.6M | 86M | ~4M | 66M |
-| **Pre-train data** | ImageNet-1K | **ImageNet-21K** | **Không** | Wikipedia+BC |
-| **Test Accuracy** | 44.11% | **89.60%** | 37.85% | **69.04%** |
-| **Hội tụ** | Nhanh | Chậm đầu, tốt cuối | Nhanh, plateau sớm | Rất nhanh (3 ep) |
-
-### So sánh có "công bằng" không?
-
-- ViT pre-train **11× nhiều ảnh hơn** ResNet-50 → lợi thế chưa thuần túy về kiến trúc
-- GRU không có pretrained embeddings vs DistilBERT pre-train 16GB text → **thiệt thòi cơ bản**
-- **Kết luận:** Lợi thế Transformer đến từ cả kiến trúc **và** quy mô pre-training — không thể tách rời
-
----
-
-## 8. Hạn chế & Hướng phát triển
-
-### Hạn chế của nghiên cứu này
-
-- **Số epochs ít** (5 cho ResNet-50/GRU, 3 cho DistilBERT) do giới hạn tính toán trên MPS
-- **CIFAR-100 32×32** bất lợi cho ResNet-50; ViT được resize lên 224 nhưng mất thông tin gốc
-- **GRU không có pretrained embeddings** — chưa phản ánh đúng tiềm năng của RNN
-- Chưa có mean ± std trên nhiều lần chạy để kiểm tra độ ổn định
-
-### Hướng phát triển
-
-- Thêm **MixUp / CutMix augmentation** cho ResNet-50 để so sánh công bằng hơn
-- Thử GRU với **pretrained word embeddings** (GloVe, FastText) → baseline RNN mạnh hơn
-- **Fine-tune CLIP end-to-end** thay vì chỉ linear probe — khai thác tối đa CLIP features
-- Tăng số epochs, báo cáo **mean ± std** qua nhiều random seeds
-
----
-
-## 8. Kết luận
-
-| Domain | Đại diện CNN/RNN | Đại diện Transformer | Winner |
+| Domain | Mô hình CNN/RNN | Mô hình Transformer | Kết quả |
 |---|---|---|---|
 | Phân loại ảnh | ResNet-50: 44.11% | ViT-B/16: **89.60%** | ViT-B/16 (+45.5 pp) |
 | Phân loại văn bản | GRU: 37.85% | DistilBERT: **69.04%** | DistilBERT (+31.2 pp) |
-| Multimodal few-shot | — | CLIP 20-shot: **93.00%** | CLIP (200 ảnh train) |
+| Đa phương thức | Zero-shot: 54.60% | CLIP 20-shot: **93.00%** | Few-shot vượt trội |
 
 ### Ba kết luận chính
 
