@@ -53,7 +53,7 @@ Báo cáo được tổ chức như sau: Mục 2 trình bày tổng quan lý thu
 
 ### 2.5 Vision-Language Models (CLIP)
 
-**CLIP** (Radford et al., 2021) học đồng thời representations của ảnh và văn bản thông qua contrastive learning trên 400 triệu cặp ảnh-văn bản. Kết quả là một không gian embedding chung cho phép so sánh trực tiếp ảnh và text mà không cần fine-tuning — đây là nền tảng của zero-shot classification.
+**CLIP** (Radford et al., 2021) học đồng thời representations của ảnh và văn bản thông qua contrastive learning trên 400 triệu cặp ảnh-văn bản. Kết quả là một không gian embedding chung cho phép so sánh trực tiếp ảnh và text mà không cần fine-tuning — đây là nền tảng của zero-shot image–text retrieval.
 
 ---
 
@@ -282,3 +282,5 @@ Nghiên cứu này đã so sánh toàn diện các kiến trúc deep learning tr
 6. Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., ... & Sutskever, I. (2021). Learning transferable visual models from natural language supervision. *Proceedings of the 38th International Conference on Machine Learning (ICML)*, 8748–8763.
 
 7. Selvaraju, R. R., Cogswell, M., Das, A., Vedantam, R., Parikh, D., & Batra, D. (2017). Grad-CAM: Visual explanations from deep networks via gradient-based localization. *Proceedings of the IEEE International Conference on Computer Vision (ICCV)*, 618–626.
+
+8. Young, P., Lai, A., Hodosh, M., & Hockenmaier, J. (2014). From image descriptions to visual denotations: New similarity metrics for semantic inference over event descriptions. *Transactions of the Association for Computational Linguistics*, 2, 67–78.

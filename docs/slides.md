@@ -131,14 +131,16 @@ style: |
 - Pre-train trên **400 triệu** cặp ảnh-văn bản thu thập từ Internet
 - Kết quả: **không gian embedding chung** — ảnh và văn bản mô tả cùng khái niệm nằm gần nhau
 
-### Hai phương pháp đánh giá
+### Ứng dụng: Zero-shot Image–Text Retrieval
 
-**Zero-shot** — không dùng ảnh train nào:
-$$\hat{y} = \arg\max_{c} \;\text{cosine}\!\left(\text{Enc}_I(\mathbf{x}),\; \text{Enc}_T(\texttt{"a photo of a } c\texttt{"}) \right)$$
+**Pipeline (không training):**
+1. Encode ảnh → $\mathbf{v} = \text{Enc}_I(x) / \|\text{Enc}_I(x)\|$
+2. Encode caption → $\mathbf{t} = \text{Enc}_T(c) / \|\text{Enc}_T(c)\|$
+3. Similarity: $s(\mathbf{v}, \mathbf{t}) = \mathbf{v} \cdot \mathbf{t}^\top$
 
-**Few-shot (K-shot)** — train linear classifier trên $K$ ảnh/class:
-- Frozen CLIP features → train $W \in \mathbb{R}^{512 \times 20}$ (200 epochs, Adam, lr=1e-2)
-- K ∈ {1, 5, 10, 20}; tổng dữ liệu train tối đa = 20 × 20 = **400 ảnh**
+**Đánh giá – Recall@K** trên Flickr30k test (1,000 ảnh × 5 captions):
+- **I→T**: Cho ảnh, rank 5,000 captions → R@K = tỉ lệ tìm được caption đúng trong top-K
+- **T→I**: Cho caption, rank 1,000 ảnh → R@K = tỉ lệ tìm được ảnh đúng trong top-K
 
 ---
 
