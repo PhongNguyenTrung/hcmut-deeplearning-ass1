@@ -103,9 +103,17 @@ def plot_training_curves(history: dict, model_name: str = "Model",
     epochs = range(1, len(history["train_loss"]) + 1)
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 
+    def annotate_points(ax, epochs, values, fmt="{:.3f}", offset=(0, 6)):
+        for x, y in zip(epochs, values):
+            ax.annotate(fmt.format(y), (x, y),
+                        textcoords="offset points", xytext=offset,
+                        ha="center", fontsize=7.5, color="dimgray")
+
     # Loss
-    axes[0].plot(epochs, history["train_loss"], label="Train", marker="o", markersize=3)
-    axes[0].plot(epochs, history["val_loss"],   label="Val",   marker="s", markersize=3)
+    axes[0].plot(epochs, history["train_loss"], label="Train", marker="o", markersize=4)
+    axes[0].plot(epochs, history["val_loss"],   label="Val",   marker="s", markersize=4)
+    annotate_points(axes[0], epochs, history["train_loss"])
+    annotate_points(axes[0], epochs, history["val_loss"], offset=(0, -10))
     axes[0].set_title(f"{model_name} – Loss")
     axes[0].set_xlabel("Epoch")
     axes[0].set_ylabel("Loss")
@@ -113,8 +121,10 @@ def plot_training_curves(history: dict, model_name: str = "Model",
     axes[0].grid(True, alpha=0.3)
 
     # Accuracy
-    axes[1].plot(epochs, history["train_acc"], label="Train", marker="o", markersize=3)
-    axes[1].plot(epochs, history["val_acc"],   label="Val",   marker="s", markersize=3)
+    axes[1].plot(epochs, history["train_acc"], label="Train", marker="o", markersize=4)
+    axes[1].plot(epochs, history["val_acc"],   label="Val",   marker="s", markersize=4)
+    annotate_points(axes[1], epochs, history["train_acc"], fmt="{:.3f}")
+    annotate_points(axes[1], epochs, history["val_acc"],   fmt="{:.3f}", offset=(0, -10))
     axes[1].set_title(f"{model_name} – Accuracy")
     axes[1].set_xlabel("Epoch")
     axes[1].set_ylabel("Accuracy")
