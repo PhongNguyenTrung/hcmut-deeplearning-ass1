@@ -14,7 +14,7 @@ style: |
   h3 { color: #0055b3; font-size: 22px; margin: 10px 0 6px; }
   table { width: 100%; border-collapse: collapse; font-size: 18px; }
   th { background: #003087; color: white; padding: 7px 10px; }
-  td { padding: 6px 10px; border: 1px solid #ccc; }
+  td { padding: 6px 10px; border: 1px solid #ffffff; }
   tr:nth-child(even) { background: #f0f4ff; }
   ul { margin: 6px 0; }
   li { margin: 4px 0; }
@@ -23,6 +23,7 @@ style: |
   section.title-slide { background: linear-gradient(135deg, #001f5b 0%, #0055b3 100%); color: white; }
   section.title-slide h1 { color: white; font-size: 34px; border: none; }
   section.title-slide h2 { color: #aad4ff; border-color: #5599dd; font-size: 22px; }
+  section.title-slide td { color: #000; }
   section.section-header { background: #003087; color: white; display: flex; align-items: center; justify-content: center; }
   section.section-header h1 { color: white; font-size: 42px; text-align: center; border: none; }
   section.section-header h2 { color: #aad4ff; border: none; text-align: center; font-size: 24px; }
@@ -38,7 +39,8 @@ style: |
 | | |
 |---|---|
 | **Môn học** | CO5085 – Học sâu và ứng dụng trong thị giác máy tính |
-| **Sinh viên** | Nguyễn Trung Phong – MSSV: 2570047 |
+| **Nhóm** | group_12 |
+| **Học viên** | Nguyễn Trung Phong – MSSV: 2570047 |
 | **Giảng viên** | Lê Thành Sách |
 | **Học kỳ** | 2 / 2025–2026 – HCMUT |
 
@@ -51,11 +53,10 @@ style: |
 | 1 | Bối cảnh & Câu hỏi nghiên cứu | 3 |
 | 2 | Cơ sở lý thuyết (CNN, ViT, GRU, DistilBERT, CLIP) | 4–6 |
 | 3 | Tập dữ liệu & EDA | 7–8 |
-| 4 | **Dataset, DataLoader & Augmentation** | 9 |
-| 5 | **Bài toán 1** – Phân loại ảnh: ResNet-50 vs. ViT-B/16 | 10–12 |
-| 6 | **Bài toán 2** – Phân loại văn bản: GRU vs. DistilBERT | 13–15 |
-| 7 | **Bài toán 3** – Phân loại đa phương thức: Zero-shot vs. Few-shot | 16–17 |
-| 8 | Kết quả tổng hợp & Kết luận | 18–19 |
+| 4 | **Bài toán 1** – Phân loại ảnh: ResNet-50 vs. ViT-B/16 | 9–11 |
+| 5 | **Bài toán 2** – Phân loại văn bản: GRU vs. DistilBERT | 12–14 |
+| 6 | **Bài toán 3** – Phân loại đa phương thức: Zero-shot vs. Few-shot | 15–16 |
+| 7 | Kết quả tổng hợp & Kết luận | 17–18 |
 
 ---
 
@@ -64,8 +65,7 @@ style: |
 ### Động lực
 
 - **CNN** và **RNN** từng là kiến trúc chủ đạo trong CV và NLP suốt hơn một thập kỷ
-- Từ 2017–2021, kiến trúc **Transformer** lần lượt chinh phục NLP (BERT), CV (ViT), và multimodal (CLIP)
-- Câu hỏi thực tiễn: khi nào nên dùng Transformer thay CNN/RNN, và chi phí là bao nhiêu?
+- Kiến trúc **Transformer** lần lượt chinh phục NLP (BERT), CV (ViT), và multimodal (CLIP)
 
 ### Ba câu hỏi nghiên cứu
 
@@ -131,16 +131,17 @@ style: |
 - Pre-train trên **400 triệu** cặp ảnh-văn bản thu thập từ Internet
 - Kết quả: **không gian embedding chung** — ảnh và văn bản mô tả cùng khái niệm nằm gần nhau
 
-### Ứng dụng: Zero-shot Image–Text Retrieval
+### Ứng dụng: Zero-shot & Few-shot Classification
 
-**Pipeline (không training):**
-1. Encode ảnh → $\mathbf{v} = \text{Enc}_I(x) / \|\text{Enc}_I(x)\|$
-2. Encode caption → $\mathbf{t} = \text{Enc}_T(c) / \|\text{Enc}_T(c)\|$
-3. Similarity: $s(\mathbf{v}, \mathbf{t}) = \mathbf{v} \cdot \mathbf{t}^\top$
+**Zero-shot** (0 ảnh train):
+1. Tạo text prompt: `"a photo of a {class}"` cho mỗi class
+2. Encode ảnh → $\mathbf{v}$, encode prompt → $\mathbf{t}_c$ (L2-normalize)
+3. Dự đoán: $\hat{y} = \arg\max_c\; \mathbf{v} \cdot \mathbf{t}_c^\top$
 
-**Đánh giá – Recall@K** trên Flickr30k test (1,000 ảnh × 5 captions):
-- **I→T**: Cho ảnh, rank 5,000 captions → R@K = tỉ lệ tìm được caption đúng trong top-K
-- **T→I**: Cho caption, rank 1,000 ảnh → R@K = tỉ lệ tìm được ảnh đúng trong top-K
+**Few-shot** (K ảnh/class, K = 1/5/10/20):
+1. CLIP encoder **frozen hoàn toàn** — trích đặc trưng ảnh $\mathbf{v} \in \mathbb{R}^{512}$
+2. Train linear head $W \in \mathbb{R}^{512 \times 10}$ trên K×10 ảnh
+3. Inference: $\hat{y} = \arg\max\; W^\top \mathbf{v}$
 
 ---
 
@@ -153,6 +154,9 @@ style: |
 
 ## 3. EDA – Dữ liệu Hình ảnh (CIFAR-100)
 
+<div style="display:flex; gap:20px; align-items:flex-start;">
+<div style="flex:1; min-width:0;">
+
 **60,000 ảnh màu 32×32 · 100 fine-grained class · 20 superclass**
 - Train: 50,000 (500 ảnh/class) · Test: 10,000 (100 ảnh/class) — **cân bằng hoàn toàn**
 
@@ -160,72 +164,54 @@ style: |
 
 | Split | Bước xử lý |
 |---|---|
-| **Train** | `RandomCrop(32, pad=4)` → `RandomHorizontalFlip` → `ColorJitter(0.2)` → `Normalize` |
-| **Val/Test** | `ToTensor` → `Normalize(μ=[0.507,0.487,0.441], σ=[0.267,0.256,0.276])` |
-| **ViT-B/16** | Thêm `Resize(256)` → `CenterCrop(224)` trước Normalize |
+| **Train** | `RandomCrop` → `HFlip` → `ColorJitter` → `Normalize` |
+| **Val/Test** | `ToTensor` → `Normalize` |
+| **ViT-B/16** | Thêm `Resize(256)` → `CenterCrop(224)` |
 
-> **Thách thức:** Độ phân giải 32×32 rất thấp — các class trong cùng superclass dễ bị nhầm lẫn; ViT được pre-train ở 224×224 nên bị bất lợi nhẹ ở bước resize.
+> **Thách thức:** 32×32 rất thấp — class cùng superclass dễ nhầm; ViT pre-train ở 224×224 nên bị bất lợi nhẹ.
 
-![bg right:38% 95%](../results/cifar100_samples.png)
+![bg left:60% 95%](../results/cifar100_samples.png)
+![bg right:60% 95%](../results/augmentation_preview.png)
 
 ---
 
-## 3. EDA – Dữ liệu Văn bản & Multimodal
-
-### 20 Newsgroups
+## 3. EDA – Dữ liệu Văn bản (20 Newsgroups)
 
 - ~18,000 bài đăng · 20 chủ đề (politics, sports, science, religion…)
 - Lọc `remove=('headers','footers','quotes')` → chỉ giữ nội dung chính
 - Train: ~11,314 · Test: ~7,532
-
-**Đặc điểm phân phối:**
 - Độ dài văn bản dao động lớn (50 → 5,000+ từ) → truncate tại **max_length=256**
 - Phân phối class tương đối cân bằng (~550–600 bài/class)
 
-### Flickr30k (Multimodal Dataset – 10 classes)
+![bg left:60% 95%](../results/newsgroups_class_dist.png)
+![bg right:60% 95%](../results/newsgroups_length_dist.png)
+
+---
+
+## 3. EDA – Dữ liệu Đa phương thức (Flickr30k)
 
 - **31,783 ảnh** thật, mỗi ảnh có **5 captions** do con người viết
 - Test split: **1,000 ảnh** (tải từ `AnyModal/flickr30k`)
 - Gán nhãn từ captions bằng keyword matching → **10 semantic classes**: people, dog, water, sports, outdoor, horse, bicycle, food, nature, indoor
-- Mỗi ảnh đều có cặp (ảnh, caption) thật — đúng yêu cầu multimodal
+- Mỗi ảnh đều có cặp (ảnh, caption) thật
 
-![bg right:35% 95%](../results/newsgroups_class_dist.png)
-
----
-
-<!-- _class: section-header -->
-
-# Dataset, DataLoader & Augmentation
+![bg left:60% 95%](../results/multimodal_image_text_pairs.png)
+![bg right:60% 95%](../results/multimodal_superclass_dist.png)
 
 ---
 
-## 4. Dataset, DataLoader & Augmentation
+## Metrics Đánh giá
 
-### Image – CIFAR-100
+| Metric | Công thức |
+|---|---|---|
+| **Accuracy** | $\frac{\text{số dự đoán đúng}}{\text{tổng số mẫu}}$ |
+| **F1-Macro** | $\frac{1}{C}\sum_{c=1}^{C} \frac{2 \cdot P_c \cdot R_c}{P_c + R_c}$ |
 
-| | Cấu hình |
-|---|---|
-| **Train/Val/Test** | 40,000 / 10,000 / 10,000 (split 80/20 từ train gốc) |
-| **Batch size** | ResNet-50: 128 · ViT-B/16: 64 |
-| **Augmentation (train)** | `RandomCrop(32, pad=4)` → `RandomHorizontalFlip` → `ColorJitter(0.2)` → `Normalize` |
-| **Val/Test** | `ToTensor` → `Normalize` (không augment) |
-| **ViT resize** | Thêm `Resize(256)` → `CenterCrop(224)` |
+### Tại sao dùng cả hai?
 
-### Text – 20 Newsgroups
-
-| | Cấu hình |
-|---|---|
-| **Train/Val/Test** | ~9,617 / ~1,697 / 7,532 |
-| **Tokenizer** | `DistilBertTokenizer` (vocab 30,522) |
-| **max\_length** | 256 tokens · padding + truncation |
-| **Batch size** | DistilBERT: 32 · GRU: 64 |
-
-### Multimodal – Flickr30k
-
-| | Cấu hình |
-|---|---|
-| **Test set** | 1,000 ảnh · keyword labeling → 10 classes (max 60/class) |
-| **CLIP preprocess** | `Resize(224)` → `CenterCrop(224)` → `Normalize` (CLIP chuẩn) |
+- **Accuracy** — trực quan, dễ so sánh tổng thể; nhưng có thể bị lệch nếu model thiên về một số class
+- **F1-Macro** — tính F1 riêng từng class rồi lấy trung bình không trọng số → **phát hiện model bỏ sót class hiếm**
+- Dataset cân bằng (CIFAR-100: 500/class · 20 Newsgroups: ~550/class · Flickr-10: ~100/class) → Accuracy và F1-Macro thường nhất quán
 
 ---
 
@@ -269,17 +255,36 @@ style: |
 - ResNet gặp khó khăn do ảnh nhỏ 32×32 — inductive bias của convolution không phù hợp
 - Lưu ý: ViT pre-train trên **14M ảnh** (ImageNet-21K) vs ResNet 1.2M → **lợi thế dữ liệu 11×** cần tính đến
 
-![bg right:35% 95%](../results/image_comparison_acc.png)
+![bg left:50% 95%](../results/image_comparison_acc.png)
+![bg right:50% 95%](../results/image_comparison_f1.png)
 
 ---
 
-## 4. Bài toán 1 – Training Curves
+## 4. Bài toán 1 – Training Curves: ResNet-50
 
-- **ResNet-50**: val accuracy tăng ổn định, hội tụ nhanh ở epoch 3–4, dấu hiệu nhẹ overfitting cuối
-- **ViT-B/16**: khởi đầu chậm hơn (epoch 1–2 thấp), sau đó tăng nhanh mạnh — đặc trưng của Transformer cần "warm-up" để thích nghi với task mới
-- Train loss ViT hội tụ tốt, val loss không tăng → không overfitting trong 5 epochs
+- Val accuracy tăng ổn định, hội tụ nhanh ở epoch 3–4
+- Dấu hiệu nhẹ overfitting ở cuối: train loss tiếp tục giảm nhưng val loss bắt đầu tăng nhẹ
+
+![bg right:55% 95%](../results/resnet50_curves.png)
+
+---
+
+## 4. Bài toán 1 – Training Curves: ViT-B/16
+
+- Khởi đầu chậm hơn (epoch 1–2 thấp) — Transformer cần "warm-up" để thích nghi với task mới
+- Sau đó tăng nhanh mạnh; val loss không tăng → không overfitting trong 5 epochs
 
 ![bg right:55% 95%](../results/vit_b16_curves.png)
+
+---
+
+## 4. Bài toán 1 – Phân tích Lỗi (Confusion Matrix – ResNet-50)
+
+- Phần lớn lỗi xảy ra **trong cùng superclass**: nhầm `beaver` ↔ `otter`, `bus` ↔ `train`
+- Ít lỗi xuyên superclass → mô hình đã học phân biệt ở mức superclass nhưng chưa đủ tinh tế ở fine-grained
+- **Nguyên nhân:** độ phân giải 32×32 quá thấp — các class cùng superclass trông gần như giống nhau
+
+![bg right:55% 95%](../results/confusion_matrix_resnet50.png)
 
 ---
 
@@ -324,15 +329,24 @@ style: |
 
 > **Kết luận**: Với NLP, **pre-training** là yếu tố quyết định hơn kiến trúc đơn thuần.
 
-![bg right:35% 95%](../results/text_comparison_acc.png)
+![bg left:50% 95%](../results/text_comparison_acc.png)
+![bg right:50% 95%](../results/text_comparison_f1.png)
 
 ---
 
-## 5. Bài toán 2 – Training Curves
+## 5. Bài toán 2 – Training Curves: GRU
 
-- **GRU**: val accuracy đạt ~35–38% và bão hòa sớm — training loss tiếp tục giảm nhưng val loss tăng nhẹ → overfitting
-- **DistilBERT**: chỉ cần **3 epochs** để đạt 69% — tốc độ hội tụ vượt trội nhờ pretrained representations
-- DistilBERT val loss giảm đều, không có dấu hiệu overfitting trong 3 epochs
+- Val accuracy đạt ~35–38% rồi bão hòa sớm
+- Training loss tiếp tục giảm nhưng val loss tăng nhẹ → overfitting rõ
+
+![bg right:55% 95%](../results/gru_curves.png)
+
+---
+
+## 5. Bài toán 2 – Training Curves: DistilBERT
+
+- Chỉ cần **3 epochs** để đạt 69% — tốc độ hội tụ vượt trội nhờ pretrained representations
+- Val loss giảm đều, không có dấu hiệu overfitting trong 3 epochs
 
 ![bg right:55% 95%](../results/distilbert_curves.png)
 
@@ -359,6 +373,8 @@ style: |
 
 > CLIP encoder **frozen hoàn toàn** — chỉ train linear head $W \in \mathbb{R}^{512 \times 10}$
 
+![bg right:40% 95%](../results/multimodal_clip_text_pca.png)
+
 ---
 
 ## 6. Bài toán 3 – Kết quả Zero-shot vs. Few-shot
@@ -377,7 +393,8 @@ style: |
 - **5-shot** vượt zero-shot: đủ signal để học phân tách
 - **20-shot = 93%** với chỉ 200 ảnh train → CLIP features **cực kỳ phân ly**
 
-![bg right:35% 95%](../results/multimodal_comparison_acc.png)
+![bg left:50% 95%](../results/multimodal_comparison_acc.png)
+![bg right:50% 95%](../results/multimodal_comparison_f1.png)
 
 ---
 
@@ -407,14 +424,3 @@ style: |
 
 # Cảm ơn thầy đã lắng nghe!
 
-<br>
-
-| | |
-|---|---|
-| **Repository** | github.com/PhongNguyenTrung/hcmut-deeplearning-ass1 |
-| **Notebooks** | 7 notebooks: EDA (01–03), Training (04–06), Extensions (07) |
-| **Scripts** | `train_image.py`, `train_text.py`, `train_multimodal.py` |
-
-<br>
-
-*Nguyễn Trung Phong – MSSV: 2570047 · CO5085 – HCMUT – 2025–2026*

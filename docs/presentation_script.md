@@ -1,6 +1,6 @@
 # Script Trình bày – CO5085 Assignment 1
 **Nguyễn Trung Phong – MSSV: 2570047**
-**Ước tính: ~9–10 phút**
+**Ước tính: ~10–12 phút**
 
 ---
 
@@ -14,7 +14,7 @@ Bài báo cáo hôm nay trình bày kết quả so sánh các kiến trúc deep 
 
 ## Slide 2 – Nội dung trình bày *(~20s)*
 
-Bài báo cáo gồm 8 phần chính — từ cơ sở lý thuyết, phân tích dữ liệu EDA, chuẩn bị DataLoader và Augmentation, đến kết quả thực nghiệm của 3 bài toán và kết luận tổng hợp. Em sẽ đi lần lượt theo thứ tự.
+Bài báo cáo gồm 7 phần chính — từ cơ sở lý thuyết, phân tích dữ liệu EDA, đến kết quả thực nghiệm của 3 bài toán và kết luận tổng hợp. Em sẽ đi lần lượt theo thứ tự.
 
 ---
 
@@ -68,39 +68,43 @@ Em ứng dụng CLIP theo hai hướng cho bài toán phân loại đa phương 
 
 ---
 
-## Slide 9 – EDA: CIFAR-100 *(~25s)*
+## Slide 9 – EDA: CIFAR-100 *(~30s)*
 
 CIFAR-100 có 60 nghìn ảnh 32×32, 100 class, phân bố hoàn toàn cân bằng — 500 ảnh mỗi class khi train.
 
 Pipeline tiền xử lý cho tập train gồm: RandomCrop với padding 4, RandomHorizontalFlip, và ColorJitter để augment. Tập val và test chỉ normalize. Riêng ViT cần thêm bước resize lên 256 rồi CenterCrop về 224.
 
-Thách thức ở đây là ảnh 32×32 rất nhỏ — các class trong cùng superclass rất dễ bị nhầm lẫn.
+Bên trái là mẫu ảnh gốc từ dataset — có thể thấy rõ ảnh 32×32 rất nhỏ, các class trong cùng superclass rất dễ nhầm lẫn. Bên phải là kết quả sau augmentation — RandomCrop và ColorJitter tạo ra đa dạng về góc độ và màu sắc, giúp model tổng quát hóa tốt hơn.
 
 ---
 
-## Slide 10 – EDA: Văn bản & Multimodal *(~30s)*
+## Slide 10 – EDA: 20 Newsgroups *(~25s)*
 
-20 Newsgroups có khoảng 18 nghìn bài đăng về 20 chủ đề từ chính trị, thể thao, khoa học đến tôn giáo. Độ dài văn bản dao động rất lớn — từ 50 đến hơn 5,000 từ — nên em truncate tại 256 token. Phân phối class tương đối cân bằng.
+20 Newsgroups có khoảng 18 nghìn bài đăng về 20 chủ đề từ chính trị, thể thao, khoa học đến tôn giáo. Phân phối class tương đối cân bằng ở khoảng 550–600 bài mỗi class — có thể thấy qua biểu đồ bên trái.
 
-Flickr30k là dataset thực tế với 31 nghìn ảnh thật, mỗi ảnh có 5 captions do con người viết. Em dùng test split gồm 1,000 ảnh và gán nhãn pseudo-label bằng keyword matching từ captions — ra 10 semantic class: people, dog, water, sports, outdoor, horse, bicycle, food, nature, indoor. Mỗi ảnh đều có cặp ảnh-caption thật, đáp ứng yêu cầu multimodal.
-
----
-
-## Slide 11 – Section header: Dataset, DataLoader & Augmentation *(~5s)*
-
-*(chuyển slide)*
+Điểm đáng chú ý là độ dài văn bản dao động rất lớn — từ 50 đến hơn 5,000 từ như biểu đồ bên phải thể hiện — nên em truncate tại 256 token để đảm bảo đồng nhất đầu vào.
 
 ---
 
-## Slide 12 – Dataset, DataLoader & Augmentation *(~30s)*
+## Slide 11 – EDA: Flickr30k *(~25s)*
 
-Đây là tổng hợp cấu hình DataLoader và Augmentation cho cả 3 bài toán.
+Flickr30k là dataset thực tế với 31 nghìn ảnh thật, mỗi ảnh có 5 captions do con người viết. Em dùng test split gồm 1,000 ảnh và gán nhãn pseudo-label bằng keyword matching từ captions — ra 10 semantic class: people, dog, water, sports, outdoor, horse, bicycle, food, nature, indoor.
 
-Với ảnh — CIFAR-100: split 40K/10K/10K, batch size 128 cho ResNet và 32 cho ViT; augmentation trên tập train gồm RandomCrop, HorizontalFlip, ColorJitter.
+Bên trái là ví dụ các cặp ảnh-caption thật — mỗi ảnh đều có văn bản mô tả tương ứng, đúng yêu cầu multimodal. Bên phải là phân phối 10 class sau keyword labeling.
 
-Với văn bản — 20 Newsgroups: dùng chung DistilBertTokenizer, max_length 256, batch size 32 cho DistilBERT và 64 cho GRU.
+---
 
-Với multimodal — Flickr30k: test set 1,000 ảnh, keyword labeling ra 10 class, CLIP preprocessing chuẩn: Resize 224 → CenterCrop 224 → Normalize.
+## Slide 12 – Metrics Đánh giá *(~45s)*
+
+Trước khi vào kết quả thực nghiệm, em xin trình bày về các metrics em dùng để đánh giá cả 3 bài toán.
+
+Em dùng hai metrics chính: **Accuracy** và **F1-Macro**.
+
+Accuracy là tỉ lệ dự đoán đúng trên tổng số mẫu — trực quan, dễ so sánh, nhưng có thể bị lệch nếu model thiên về một số class phổ biến.
+
+Vì vậy em dùng thêm F1-Macro — metric này tính F1 riêng cho từng class rồi lấy trung bình không trọng số. Điều này đảm bảo mỗi class đóng góp ngang nhau vào điểm cuối, giúp phát hiện model bỏ sót class nào đó.
+
+Dataset của cả 3 bài toán đều tương đối cân bằng, nên Accuracy và F1-Macro thường nhất quán với nhau — nhưng F1-Macro vẫn là tiêu chí chính để xếp hạng mô hình.
 
 ---
 
@@ -120,29 +124,41 @@ Cả hai đều dùng CosineAnnealingLR và gradient clipping max_norm=1.0 để
 
 ## Slide 15 – Bài toán 1: Kết quả *(~45s)*
 
-Kết quả rất rõ ràng: ResNet-50 đạt 44.11%, còn ViT-B/16 đạt **89.60%** — hơn **45.5 điểm phần trăm**, gần như gấp đôi.
+Kết quả rất rõ ràng: ResNet-50 đạt 44.11%, còn ViT-B/16 đạt **89.60%** — hơn **45.5 điểm phần trăm**, gần như gấp đôi. F1-Macro cũng nhất quán: ResNet-50 đạt 0.434, ViT-B/16 đạt 0.896.
 
 Lý do chính: ViT dùng self-attention toàn cục ngay từ layer đầu, mọi patch trong ảnh tương tác trực tiếp với nhau. ResNet thì chỉ nhìn vùng 3×3 ở mỗi bước — inductive bias cục bộ này không phù hợp với ảnh nhỏ 32×32.
 
-Cần lưu ý: ViT được pre-train trên ImageNet-21K với 14 triệu ảnh, trong khi ResNet-50 chỉ pre-train trên 1.2 triệu ảnh — lợi thế dữ liệu tới 11 lần. Vì vậy lợi thế của ViT đến từ cả kiến trúc lẫn quy mô pre-training — không hoàn toàn thuần túy về kiến trúc.
+Cần lưu ý: ViT được pre-train trên ImageNet-21K với 14 triệu ảnh, trong khi ResNet-50 chỉ pre-train trên 1.2 triệu ảnh — lợi thế dữ liệu tới 11 lần.
 
 ---
 
-## Slide 16 – Bài toán 1: Training Curves *(~20s)*
+## Slide 16 – Bài toán 1: Training Curves – ResNet-50 *(~20s)*
 
-Nhìn vào training curves, ResNet-50 hội tụ nhanh và ổn định, có dấu hiệu nhẹ overfitting ở cuối.
-
-ViT-B/16 khởi đầu chậm hơn ở epoch 1–2 — đây là đặc trưng của Transformer, cần thời gian warm-up để thích nghi với task mới. Sau đó tăng rất mạnh và val loss không tăng — không có overfitting trong 5 epochs.
+Nhìn vào training curve của ResNet-50, val accuracy tăng ổn định và hội tụ nhanh từ epoch 3–4. Tuy nhiên ở cuối có dấu hiệu nhẹ overfitting — training loss tiếp tục giảm trong khi val loss bắt đầu nhích lên.
 
 ---
 
-## Slide 17 – Section header: Bài toán 2 *(~5s)*
+## Slide 17 – Bài toán 1: Training Curves – ViT-B/16 *(~20s)*
+
+ViT-B/16 khởi đầu chậm hơn rõ rệt ở epoch 1–2 — đây là đặc trưng của Transformer, cần thời gian warm-up để thích nghi với task mới. Sau đó tăng nhanh và mạnh. Val loss không tăng trong suốt 5 epochs — không có dấu hiệu overfitting.
+
+---
+
+## Slide 18 – Bài toán 1: Phân tích Lỗi – Confusion Matrix *(~30s)*
+
+Nhìn vào confusion matrix của ResNet-50 trên 100 class, có thể thấy xu hướng rõ ràng: phần lớn lỗi xảy ra **trong cùng superclass** — nhầm `beaver` với `otter`, hay `bus` với `train`. Ít lỗi xuyên superclass — model không nhầm `dog` với `airplane`.
+
+Điều này cho thấy model đã học được phân biệt ở mức superclass nhưng chưa đủ tinh tế ở fine-grained level. Nguyên nhân trực tiếp là độ phân giải 32×32 quá thấp — các class trong cùng superclass trông gần như giống nhau ở kích thước này.
+
+---
+
+## Slide 19 – Section header: Bài toán 2 *(~5s)*
 
 *(chuyển slide)*
 
 ---
 
-## Slide 18 – Bài toán 2: Cài đặt thực nghiệm *(~25s)*
+## Slide 20 – Bài toán 2: Cài đặt thực nghiệm *(~25s)*
 
 Điểm đáng chú ý trong setup Bài toán 2: cả GRU và DistilBERT đều dùng cùng DistilBertTokenizer và max_length 256 — tức là embedding space đầu vào đồng nhất. Sự khác biệt chỉ đến từ kiến trúc xử lý và pretrained weights.
 
@@ -150,9 +166,9 @@ GRU train 5 epochs với lr=0.001, không có pretrained embeddings. DistilBERT 
 
 ---
 
-## Slide 19 – Bài toán 2: Kết quả *(~40s)*
+## Slide 21 – Bài toán 2: Kết quả *(~40s)*
 
-GRU đạt 37.85%, DistilBERT đạt **69.04%** — khoảng cách **31.2 điểm** — đây là gap lớn nhất trong cả 3 domain.
+GRU đạt 37.85%, DistilBERT đạt **69.04%** — khoảng cách **31.2 điểm** — đây là gap lớn nhất trong cả 3 domain. F1-Macro tương ứng là 0.361 và 0.668, nhất quán với accuracy.
 
 GRU bị hạn chế bởi xử lý tuần tự — không song song, khó học long-range dependency với chuỗi 256 token. Quan trọng hơn, GRU phải học từ đầu trên chỉ 11 nghìn bài — quá ít để khái quát hóa tốt.
 
@@ -160,49 +176,55 @@ Kết luận rút ra: **với NLP, pre-training là yếu tố quyết định h
 
 ---
 
-## Slide 20 – Bài toán 2: Training Curves *(~20s)*
+## Slide 22 – Bài toán 2: Training Curves – GRU *(~20s)*
 
-GRU đạt khoảng 35–38% rồi bão hòa sớm — training loss tiếp tục giảm nhưng val loss tăng nhẹ, dấu hiệu overfitting rõ.
-
-DistilBERT chỉ cần 3 epochs để đạt 69%, val loss giảm đều, không overfitting. Tốc độ hội tụ vượt trội hoàn toàn.
+GRU đạt khoảng 35–38% rồi bão hòa sớm. Training loss tiếp tục giảm nhưng val loss tăng nhẹ — dấu hiệu overfitting rõ, cho thấy GRU bắt đầu học thuộc tập train thay vì khái quát hóa.
 
 ---
 
-## Slide 21 – Section header: Bài toán 3 *(~5s)*
+## Slide 23 – Bài toán 2: Training Curves – DistilBERT *(~20s)*
+
+DistilBERT chỉ cần 3 epochs để đạt 69%. Val loss giảm đều qua từng epoch, không có dấu hiệu overfitting. Tốc độ hội tụ vượt trội hoàn toàn so với GRU — nhờ pretrained representations đã nắm sẵn ngữ nghĩa từ trước.
+
+---
+
+## Slide 24 – Section header: Bài toán 3 *(~5s)*
 
 *(chuyển slide)*
 
 ---
 
-## Slide 22 – Bài toán 3: Phương pháp & Cài đặt *(~35s)*
+## Slide 25 – Bài toán 3: Phương pháp & Cài đặt *(~40s)*
 
 Bài toán 3 so sánh hai cách phân loại ảnh với CLIP trên Flickr30k — zero-shot và few-shot.
 
-Zero-shot: không cần bất kỳ ảnh train nào — chỉ dùng text prompt "a photo of a {class}" rồi tính cosine similarity với image embedding.
+Zero-shot: không cần bất kỳ ảnh train nào — chỉ dùng text prompt "a photo of a {class}" rồi tính cosine similarity với image embedding, chọn class có similarity cao nhất.
 
-Few-shot K=1/5/10/20: freeze hoàn toàn CLIP encoder, chỉ train thêm một linear head kích thước 512×10 trên K ảnh mỗi class. Với 20-shot, tổng số ảnh train chỉ là 200 ảnh.
+Few-shot K=1/5/10/20: freeze hoàn toàn CLIP encoder, chỉ train thêm một linear head 512×10 trên K ảnh mỗi class. Với 20-shot, tổng số ảnh train chỉ là 200 ảnh.
+
+Hình bên phải là PCA visualization của CLIP embeddings — có thể thấy các class khác nhau đã phân ly rõ ràng trong không gian embedding ngay cả trước khi train bất kỳ classifier nào.
 
 ---
 
-## Slide 23 – Bài toán 3: Kết quả Zero-shot vs. Few-shot *(~50s)*
+## Slide 26 – Bài toán 3: Kết quả Zero-shot vs. Few-shot *(~50s)*
 
 Kết quả rất ấn tượng. Zero-shot đạt **54.6%** accuracy với 0 ảnh train — chỉ nhờ text prompt.
 
 1-shot thụt lùi xuống 32.8% — 1 ảnh/class không đủ để linear head ước lượng phân phối, dẫn đến overfit nặng.
 
-Từ 5-shot trở đi thì vượt zero-shot: 5-shot đạt 61.2%, 10-shot đạt 76.4%, và **20-shot đạt 93%** với chỉ 200 ảnh train.
+Từ 5-shot trở đi thì vượt zero-shot: 5-shot đạt 61.2%, 10-shot đạt 76.4%, và **20-shot đạt 93%** với chỉ 200 ảnh train. F1-Macro cũng nhất quán, đạt 0.932 ở 20-shot.
 
-Điều này cho thấy CLIP features cực kỳ phân ly — chỉ cần một linear head nhỏ là đủ tách 10 class một cách chính xác. Zero-shot rất mạnh, nhưng few-shot với đủ mẫu vượt trội rõ rệt.
+Điều này cho thấy CLIP features cực kỳ phân ly — chỉ cần một linear head nhỏ là đủ tách 10 class một cách chính xác.
 
 ---
 
-## Slide 24 – Section header: Kết quả tổng hợp & Kết luận *(~5s)*
+## Slide 27 – Section header: Kết quả tổng hợp & Kết luận *(~5s)*
 
 *(chuyển slide)*
 
 ---
 
-## Slide 25 – Kết quả tổng hợp & Kết luận *(~40s)*
+## Slide 28 – Kết quả tổng hợp & Kết luận *(~40s)*
 
 Tóm lại kết quả ba bài toán:
 
@@ -220,7 +242,7 @@ Ba kết luận chính:
 
 ---
 
-## Slide 26 – Cảm ơn *(~10s)*
+## Slide 29 – Cảm ơn *(~10s)*
 
 Cảm ơn thầy đã lắng nghe. Toàn bộ code, notebooks và kết quả thực nghiệm được lưu trên repository của em. Em xin hết.
 
@@ -228,8 +250,10 @@ Cảm ơn thầy đã lắng nghe. Toàn bộ code, notebooks và kết quả th
 
 ## Ghi chú khi quay
 
+- **Tổng thời lượng:** ~10–12 phút
 - **Tốc độ:** ~130 từ/phút — đọc rõ, không quá nhanh
-- **Section header slides** (4, 8, 11, 13, 17, 21, 24): chỉ dừng 2–3 giây, không cần đọc
-- **Slide có công thức** (slide 5, 7): đọc bằng lời thay vì ký hiệu toán — ví dụ "công thức self-attention dùng softmax của QK transpose chia căn dk nhân V"
+- **Section header slides** (4, 8, 13, 19, 24, 27): chỉ dừng 2–3 giây, không cần đọc
+- **Slide metrics** (slide 12): đọc công thức bằng lời — "F1 Macro là trung bình F1 của từng class"
+- **Slide CLIP PCA** (slide 25): chỉ cần nêu ngắn — "hình bên phải cho thấy các class đã phân ly rõ trong không gian embedding"
 - **Dừng 2–3 giây** khi chuyển slide để tránh bị cắt hình
 - **Nhấn mạnh** các con số quan trọng: 89.60%, 69.04%, 93.00%, +45.5 pp, +31.2 pp
