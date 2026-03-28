@@ -1,0 +1,14 @@
+{
+  "SimpleViT (PyTorch)": {
+    "test_acc": 0.3192,
+    "val_acc": 0.33,
+    "f1_macro": 0.3038504810568018,
+    "params": "821.0K"
+  },
+  "CustomViT (Tự xây)": {
+    "test_acc": 0.3456,
+    "val_acc": 0.358,
+    "f1_macro": 0.33110433663710376,
+    "params": "819.4K"
+  }
+}

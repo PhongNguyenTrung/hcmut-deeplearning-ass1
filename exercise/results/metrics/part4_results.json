@@ -1,0 +1,20 @@
+{
+  "CNNTransformerHybrid": {
+    "test_acc": 0.3725,
+    "val_acc": 0.389,
+    "f1_macro": 0.3587431530811625,
+    "params": "446.1K"
+  },
+  "SpatialTokenViT": {
+    "test_acc": 0.131,
+    "val_acc": 0.1312,
+    "f1_macro": 0.0985583629406356,
+    "params": "172.4K"
+  },
+  "ChannelTokenViT": {
+    "test_acc": 0.1756,
+    "val_acc": 0.1818,
+    "f1_macro": 0.15290643788429434,
+    "params": "549.5K"
+  }
+}

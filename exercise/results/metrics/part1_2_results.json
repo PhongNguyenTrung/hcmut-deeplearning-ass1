@@ -1,0 +1,26 @@
+{
+  "SoftmaxRegression": {
+    "test_acc": 0.0794,
+    "val_acc": 0.0834,
+    "f1_macro": 0.060862709458462394,
+    "params": "307.3K"
+  },
+  "MLP": {
+    "test_acc": 0.2063,
+    "val_acc": 0.2068,
+    "f1_macro": 0.18309134034903585,
+    "params": "1.7M"
+  },
+  "SimpleCNN": {
+    "test_acc": 0.3588,
+    "val_acc": 0.3638,
+    "f1_macro": 0.3448190700624374,
+    "params": "346.6K"
+  },
+  "SimpleViT": {
+    "test_acc": 0.2447,
+    "val_acc": 0.2554,
+    "f1_macro": 0.22348889017873527,
+    "params": "821.0K"
+  }
+}
