@@ -3,536 +3,694 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Báo cáo Bài Tập — Phân loại Ảnh với Mô hình Học Sâu Cơ bản</title>
+<title>Báo cáo — Phân loại Ảnh với Mô hình Học Sâu Cơ bản | CO5085</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    font-size: 11pt;
-    line-height: 1.65;
-    color: #1a1a2e;
-    background: #fff;
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 2.5cm 2cm;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #4f46e5;
+    --primary-light: #6366f1;
+    --accent: #ec4899;
+    --bg: #ffffff;
+    --surface: #f8f9ff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --code-bg: #1e1e2e;
+    --code-fg: #cdd6f4;
+    --good: #16a34a;
+    --warn: #d97706;
+    --bad: #dc2626;
   }
-  /* Cover */
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+  }
+
+  /* ── COVER ── */
   .cover {
     text-align: center;
-    padding: 2rem 0 3rem;
-    border-bottom: 3px solid #6366f1;
-    margin-bottom: 2.5rem;
+    padding: 3rem 1rem 3.5rem;
+    border-bottom: 3px solid var(--primary);
+    margin-bottom: 3rem;
+    page-break-after: always;
   }
-  .cover .school { font-size: 1rem; color: #555; margin-bottom: 0.3rem; }
-  .cover .course { font-size: 1.1rem; font-weight: 700; color: #6366f1; margin-bottom: 1.5rem; }
+  .cover .school  { font-size: 0.9rem; color: var(--text-muted); letter-spacing: 0.04em; }
+  .cover .course  { font-size: 1rem; font-weight: 700; color: var(--primary); margin: 0.3rem 0 2rem; }
   .cover h1 {
-    font-size: 1.8rem; font-weight: 800;
-    color: #1a1a2e; line-height: 1.3;
-    margin-bottom: 1.5rem;
+    font-size: 2rem; font-weight: 800; line-height: 1.25;
+    color: var(--text); margin-bottom: 2rem;
   }
-  .cover table { margin: 0 auto; border-collapse: collapse; }
-  .cover td { padding: 0.25rem 1rem; font-size: 0.95rem; text-align: left; }
-  .cover td:first-child { color: #555; font-weight: 600; text-align: right; }
-  .cover td:last-child { color: #1a1a2e; }
+  .cover h1 span { color: var(--primary); }
+  .cover-meta {
+    display: inline-grid; grid-template-columns: auto auto;
+    gap: 0.3rem 1.5rem; text-align: left; font-size: 0.92rem;
+  }
+  .cover-meta .lbl { color: var(--text-muted); font-weight: 600; text-align: right; }
 
-  /* Headings */
-  h1 { font-size: 1.6rem; margin: 2rem 0 0.8rem; color: #1a1a2e; border-bottom: 2px solid #6366f1; padding-bottom: 0.3rem; }
-  h2 { font-size: 1.3rem; margin: 1.8rem 0 0.7rem; color: #4f46e5; }
-  h3 { font-size: 1.1rem; margin: 1.4rem 0 0.5rem; color: #1a1a2e; }
-  h4 { font-size: 1rem; margin: 1rem 0 0.4rem; color: #374151; font-style: italic; }
+  /* ── TOC ── */
+  .toc {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px; padding: 1.2rem 1.8rem; margin-bottom: 2.5rem;
+  }
+  .toc h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.7rem; }
+  .toc ol { margin-left: 1.2rem; }
+  .toc li { font-size: 0.9rem; margin: 0.2rem 0; }
+  .toc a { color: var(--primary); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
 
-  /* Abstract box */
+  /* ── HEADINGS ── */
+  h1.section {
+    font-size: 1.5rem; font-weight: 800;
+    color: var(--text); margin: 3rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--primary);
+    page-break-before: always;
+  }
+  h1.section:first-of-type { page-break-before: avoid; }
+  h2 { font-size: 1.15rem; font-weight: 700; color: var(--primary); margin: 1.8rem 0 0.7rem; }
+  h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 1.3rem 0 0.5rem; }
+
+  /* ── ABSTRACT ── */
   .abstract {
-    background: #f0f0ff;
-    border-left: 4px solid #6366f1;
-    padding: 1rem 1.2rem;
-    border-radius: 4px;
-    margin: 1rem 0 1.5rem;
-    font-size: 0.97rem;
+    background: #eef2ff;
+    border-left: 5px solid var(--primary);
+    padding: 1.1rem 1.4rem; border-radius: 0 8px 8px 0;
+    margin: 1rem 0 1.8rem; font-size: 0.96rem;
   }
+  .abstract p + p { margin-top: 0.7rem; }
 
-  /* Tables */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0 1.5rem;
-    font-size: 0.9rem;
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-radius: 8px; padding: 0.8rem 1.1rem;
+    margin: 0.8rem 0 1.2rem; font-size: 0.92rem;
+    display: flex; gap: 0.7rem; align-items: flex-start;
   }
+  .callout .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout.info  { background: #eff6ff; border: 1px solid #bfdbfe; }
+  .callout.warn  { background: #fffbeb; border: 1px solid #fde68a; }
+  .callout.good  { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .callout.bad   { background: #fef2f2; border: 1px solid #fecaca; }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; margin: 0.8rem 0 1.5rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
   th {
-    background: #4f46e5;
-    color: white;
-    padding: 0.55rem 0.8rem;
-    text-align: left;
-    font-weight: 600;
+    background: var(--primary); color: #fff;
+    padding: 0.55rem 0.8rem; text-align: left;
+    font-weight: 600; white-space: nowrap;
   }
-  td {
-    padding: 0.45rem 0.8rem;
-    border-bottom: 1px solid #e5e7eb;
-    vertical-align: top;
-  }
-  tr:nth-child(even) td { background: #f8f9ff; }
-  tr:hover td { background: #eef2ff; }
-  td strong { color: #4f46e5; }
+  td { padding: 0.45rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:nth-child(even) td { background: var(--surface); }
+  .rank-1 td { background: #fffbeb !important; font-weight: 700; }
+  .best   { color: var(--good); font-weight: 700; }
+  .worst  { color: var(--bad); }
+  .medal  { font-size: 1.1rem; }
 
-  /* Code blocks */
+  /* ── CODE ── */
   pre {
-    background: #1e1e2e;
-    color: #cdd6f4;
-    padding: 1rem 1.2rem;
-    border-radius: 6px;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 0.85rem;
-    overflow-x: auto;
-    margin: 0.8rem 0 1.2rem;
-    line-height: 1.5;
+    background: var(--code-bg); color: var(--code-fg);
+    padding: 1rem 1.2rem; border-radius: 8px;
+    font-family: 'Consolas', 'JetBrains Mono', monospace;
+    font-size: 0.82rem; overflow-x: auto;
+    margin: 0.7rem 0 1.3rem; line-height: 1.55;
   }
   code {
-    background: #eef2ff;
-    color: #4f46e5;
-    padding: 0.15rem 0.4rem;
-    border-radius: 3px;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 0.88em;
+    background: #eef2ff; color: var(--primary);
+    padding: 0.1rem 0.35rem; border-radius: 3px;
+    font-family: 'Consolas', monospace; font-size: 0.87em;
   }
   pre code { background: none; color: inherit; padding: 0; }
 
-  /* Paragraphs & lists */
-  p { margin: 0.6rem 0 0.8rem; }
-  ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
-  li { margin-bottom: 0.25rem; }
-
-  /* Highlight box */
-  .highlight {
-    background: #fff7ed;
-    border-left: 4px solid #f59e0b;
-    padding: 0.7rem 1rem;
-    border-radius: 4px;
-    margin: 0.8rem 0;
-    font-size: 0.95rem;
-  }
-
-  /* Section divider */
-  hr { border: none; border-top: 1px solid #e5e7eb; margin: 2rem 0; }
-
-  /* Footer */
-  .footer {
-    margin-top: 3rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
+  /* ── FIGURES ── */
+  figure {
+    margin: 1.2rem 0 2rem;
     text-align: center;
-    font-size: 0.85rem;
-    color: #6b7280;
   }
+  figure img {
+    max-width: 100%; border-radius: 8px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  figcaption {
+    font-size: 0.85rem; color: var(--text-muted);
+    margin-top: 0.5rem; font-style: italic;
+  }
+  figcaption strong { color: var(--text); font-style: normal; }
 
-  /* Print */
+  /* ── FIGURE GRID ── */
+  .fig-grid { display: grid; gap: 1.2rem; margin: 1rem 0 2rem; }
+  .fig-grid.col-2 { grid-template-columns: 1fr 1fr; }
+  .fig-grid figure { margin: 0; }
+
+  /* ── ANALYSIS CARD ── */
+  .analysis {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1rem 1.3rem; margin: 0.5rem 0 1.5rem;
+  }
+  .analysis h4 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 0.6rem; }
+  .analysis ul, .analysis ol { margin-left: 1.3rem; }
+  .analysis li { margin-bottom: 0.3rem; font-size: 0.93rem; }
+
+  /* ── STAT BADGES ── */
+  .stats-row { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 0.8rem 0 1.5rem; }
+  .stat-badge {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.7rem 1.2rem; text-align: center;
+    flex: 1 1 140px;
+  }
+  .stat-badge .val { font-size: 1.6rem; font-weight: 800; color: var(--primary); line-height: 1; }
+  .stat-badge .lbl { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  /* ── HR ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  /* ── LISTS ── */
+  p { margin: 0.5rem 0 0.9rem; }
+  ul, ol { margin: 0.4rem 0 1rem 1.5rem; }
+  li { margin-bottom: 0.3rem; }
+
+  /* ── FOOTER ── */
+  .footer { margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--border); text-align: center; font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ── PRINT ── */
   @media print {
-    body { padding: 1cm 1.5cm; max-width: 100%; }
-    h1 { page-break-before: always; }
-    h1:first-of-type { page-break-before: avoid; }
-    .cover { page-break-after: always; }
+    body { padding: 0; max-width: 100%; }
     pre { white-space: pre-wrap; word-break: break-word; }
-    table { page-break-inside: avoid; }
+    .fig-grid.col-2 { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- COVER PAGE -->
+<!-- ════════════════ COVER ════════════════ -->
 <div class="cover">
   <div class="school">Đại học Bách Khoa TP.HCM (HCMUT)</div>
-  <div class="course">CO5085 – Deep Learning &amp; Ứng dụng trong Thị giác Máy tính</div>
-  <h1>Báo cáo Bài Tập<br>Phân loại Ảnh với các Mô hình<br>Học Sâu Cơ bản</h1>
-  <table>
-    <tr><td>Đề tài</td><td>Softmax, MLP, CNN, ViT tự xây, LSTM/GRU trên CIFAR-100</td></tr>
-    <tr><td>Sinh viên</td><td>Nguyễn Trung Phong – MSSV: 2570047</td></tr>
-    <tr><td>Giảng viên</td><td>Lê Thành Sách</td></tr>
-    <tr><td>Học kỳ</td><td>2, năm học 2025–2026</td></tr>
-    <tr><td>Deadline</td><td>01/04/2026</td></tr>
-  </table>
+  <div class="course">CO5085 – Deep Learning &amp; Ứng dụng trong Thị giác Máy tính | HK2, 2025–2026</div>
+  <h1>Báo cáo Bài Tập<br><span>Phân loại Ảnh với các Mô hình<br>Học Sâu Cơ bản trên CIFAR-100</span></h1>
+  <div class="cover-meta">
+    <span class="lbl">Sinh viên</span><span>Nguyễn Trung Phong – MSSV: 2570047</span>
+    <span class="lbl">Giảng viên</span><span>Lê Thành Sách</span>
+    <span class="lbl">Deadline</span><span>01/04/2026</span>
+    <span class="lbl">Dataset</span><span>CIFAR-100 (100 lớp, 32×32, 50 000 ảnh)</span>
+    <span class="lbl">Framework</span><span>PyTorch | Apple MPS (M-series)</span>
+  </div>
 </div>
 
-<!-- ABSTRACT -->
-<h1>Tóm tắt (Abstract)</h1>
+<!-- ════════════════ TOC ════════════════ -->
+<div class="toc">
+  <h2>Mục lục</h2>
+  <ol>
+    <li><a href="#abstract">Tóm tắt</a></li>
+    <li><a href="#dataset">Tập dữ liệu &amp; Tiền xử lý</a></li>
+    <li><a href="#part1">Phần 1 – Xây dựng 4 mô hình cơ bản</a></li>
+    <li><a href="#part2">Phần 2 – Training loop &amp; So sánh (Phần 1+2)</a></li>
+    <li><a href="#part3">Phần 3 – Custom TransformerEncoder từ đầu</a></li>
+    <li><a href="#part4">Phần 4 – Kiến trúc tokenization đa dạng</a></li>
+    <li><a href="#part5">Phần 5 – LSTM/GRU cho phân loại ảnh</a></li>
+    <li><a href="#summary">Grand Summary – So sánh tất cả mô hình</a></li>
+    <li><a href="#conclusion">Kết luận</a></li>
+    <li><a href="#refs">Tài liệu tham khảo</a></li>
+  </ol>
+</div>
+
+<!-- ════════════════ ABSTRACT ════════════════ -->
+<h1 class="section" id="abstract">Tóm tắt (Abstract)</h1>
 <div class="abstract">
-  <p>Báo cáo này trình bày quá trình xây dựng và so sánh <strong>12 kiến trúc mạng nơ-ron sâu</strong> cho bài toán phân loại ảnh trên tập dữ liệu <strong>CIFAR-100</strong> (100 lớp, 32×32 pixels, 50,000 mẫu train). Tất cả mô hình được huấn luyện <strong>từ đầu</strong> (from scratch) mà không sử dụng trọng số pretrained, với vòng lặp huấn luyện tự viết bằng PyTorch.</p>
-  <p>Kết quả chính: <strong>CNN+Transformer Hybrid</strong> đạt accuracy cao nhất (<strong>37.25%</strong>), tiếp theo là <strong>SimpleCNN</strong> (35.88%) và <strong>GRU-row</strong> (36.57%). Mô hình tuyến tính <strong>Softmax Regression</strong> đạt thấp nhất (7.94%) do không học được đặc trưng phi tuyến. <strong>Custom ViT</strong> tự xây đạt 34.56% — gần bằng PyTorch ViT (31.92%), xác nhận tính đúng đắn của hiện thực. <strong>SpatialToken ViT</strong> (1024 pixel tokens) chỉ đạt 13.10%, minh chứng rõ ràng lý do tại sao ViT sử dụng patches thay vì pixels.</p>
+  <p>Báo cáo trình bày quá trình xây dựng và so sánh <strong>12 kiến trúc mạng nơ-ron sâu</strong> cho bài toán phân loại ảnh trên <strong>CIFAR-100</strong> (100 lớp, 32×32 px, 50 000 ảnh). Toàn bộ mô hình được huấn luyện <strong>from scratch</strong> — không dùng pretrained weights — với training loop tự viết bằng PyTorch, chạy trên Apple MPS (M-series).</p>
+  <p><strong>Kết quả nổi bật:</strong> CNN+Transformer Hybrid đạt accuracy cao nhất (<strong>37.25%</strong>); SimpleCNN hiệu quả nhất về tham số/accuracy (35.88%, 346.6K); GRU-row bất ngờ cạnh tranh ngang CNN (36.57%); SpatialToken ViT thất bại hoàn toàn (13.10%) — minh chứng trực quan tại sao ViT dùng patches thay vì pixels. Custom TransformerEncoder tự xây đạt kết quả tương đương PyTorch gốc (34.56% vs 31.92%), xác nhận hiện thực đúng về mặt toán học.</p>
 </div>
 
-<hr>
+<div class="stats-row">
+  <div class="stat-badge"><div class="val">12</div><div class="lbl">Mô hình</div></div>
+  <div class="stat-badge"><div class="val">37.25%</div><div class="lbl">Best Test Acc</div></div>
+  <div class="stat-badge"><div class="val">5</div><div class="lbl">Phần bài tập</div></div>
+  <div class="stat-badge"><div class="val">100</div><div class="lbl">Số lớp CIFAR</div></div>
+  <div class="stat-badge"><div class="val">From Scratch</div><div class="lbl">Không dùng pretrained</div></div>
+</div>
 
-<!-- SECTION 1: DATASET -->
-<h1>1. Tập dữ liệu (Dataset)</h1>
+<!-- ════════════════ DATASET ════════════════ -->
+<h1 class="section" id="dataset">1. Tập dữ liệu &amp; Tiền xử lý</h1>
 
 <h2>1.1 CIFAR-100</h2>
-<p><strong>CIFAR-100</strong> (Canadian Institute For Advanced Research) là tập dữ liệu benchmark chuẩn cho phân loại ảnh:</p>
-
+<div class="table-wrap">
 <table>
   <tr><th>Thuộc tính</th><th>Giá trị</th></tr>
-  <tr><td>Số lớp (fine-grained)</td><td>100</td></tr>
-  <tr><td>Số lớp thô (superclass)</td><td>20</td></tr>
-  <tr><td>Kích thước ảnh</td><td>32 × 32 pixels, 3 kênh màu RGB</td></tr>
-  <tr><td>Tập train</td><td>50,000 ảnh (500 ảnh/lớp)</td></tr>
-  <tr><td>Tập test</td><td>10,000 ảnh (100 ảnh/lớp)</td></tr>
-  <tr><td>Chia train/val</td><td>45,000 train / 5,000 validation</td></tr>
+  <tr><td>Số lớp</td><td>100 fine-grained (20 superclasses)</td></tr>
+  <tr><td>Kích thước ảnh</td><td>32 × 32 pixels, 3 kênh RGB</td></tr>
+  <tr><td>Train / Val / Test</td><td>45 000 / 5 000 / 10 000</td></tr>
+  <tr><td>Ảnh mỗi lớp (train)</td><td>450 (val: 50, test: 100)</td></tr>
 </table>
-
-<p><strong>Lý do chọn CIFAR-100 thay vì CIFAR-10:</strong></p>
-<ul>
-  <li>100 lớp (thay vì 10) → bài toán phân loại khó hơn, phân biệt rõ hơn sức mạnh của các kiến trúc</li>
-  <li>Với CIFAR-10, ngay cả Softmax Regression cũng đạt &gt;80% → không phân biệt được sự khác nhau</li>
-  <li>Phù hợp với mục tiêu học tập: thấy rõ tại sao cần kiến trúc phức tạp hơn</li>
-</ul>
-
-<h2>1.2 Tiền xử lý</h2>
-<p><strong>Chuẩn hoá (Normalization):</strong> Sử dụng thống kê tính từ chính tập CIFAR-100 (không dùng ImageNet stats):</p>
-<pre>mean = [0.5071, 0.4867, 0.4408]
-std  = [0.2675, 0.2565, 0.2761]</pre>
-
-<p><strong>Data augmentation cho tập train:</strong></p>
-<ul>
-  <li><code>RandomCrop(32, padding=4)</code>: cắt ngẫu nhiên sau khi đệm 4 pixel</li>
-  <li><code>RandomHorizontalFlip()</code>: lật ngang với xác suất 50%</li>
-</ul>
-<p><strong>Tập validation/test:</strong> Chỉ chuẩn hoá, không augmentation.</p>
-
-<hr>
-
-<!-- SECTION 2: PART 1 -->
-<h1>2. Phần 1 — Xây dựng 4 Mô hình Phân loại</h1>
-<p>Tất cả mô hình nhận input shape <strong>[B, 3, 32, 32]</strong> và trả về logits <strong>[B, 100]</strong>.</p>
-
-<h2>2.1 Softmax Regression</h2>
-<p><strong>Ý tưởng:</strong> Mô hình tuyến tính đơn giản nhất — ánh xạ trực tiếp từ pixel đến lớp.</p>
-<pre>[B, 3, 32, 32] → Flatten → [B, 3072] → Linear(3072, 100) → [B, 100]</pre>
-
-<table>
-  <tr><th>Tham số</th><th>Giá trị</th></tr>
-  <tr><td>Input features</td><td>3 × 32 × 32 = 3,072</td></tr>
-  <tr><td>Số tham số</td><td>3,072 × 100 + 100 = <strong>307,300</strong></td></tr>
-  <tr><td>Activation</td><td>Không (softmax tự tính trong CrossEntropyLoss)</td></tr>
-</table>
-
-<div class="highlight">
-  <strong>Lưu ý quan trọng:</strong> Không thêm explicit <code>softmax</code> trong <code>forward()</code> vì <code>nn.CrossEntropyLoss = log_softmax + NLLLoss</code> — tự tính softmax bên trong. Thêm softmax trước CrossEntropyLoss sẽ cho kết quả sai.
 </div>
 
-<h2>2.2 MLP (Multi-Layer Perceptron)</h2>
-<p><strong>Ý tưởng:</strong> Thêm lớp ẩn với hàm kích hoạt phi tuyến để học được các pattern phức tạp hơn.</p>
-<pre>Flatten → Linear(3072, 512) → BatchNorm1d → ReLU → Dropout(0.3)
-        → Linear(512, 256)  → BatchNorm1d → ReLU → Dropout(0.3)
-        → Linear(256, 100)</pre>
+<h2>1.2 Tiền xử lý và Data Augmentation</h2>
+<pre># Normalize với CIFAR-100 stats (KHÔNG dùng ImageNet stats)
+mean = [0.5071, 0.4867, 0.4408]
+std  = [0.2675, 0.2565, 0.2761]
 
-<table>
-  <tr><th>Tham số</th><th>Giá trị</th></tr>
-  <tr><td>Lớp ẩn</td><td>2 (512 và 256 neurons)</td></tr>
-  <tr><td>Activation</td><td>ReLU</td></tr>
-  <tr><td>Regularization</td><td>BatchNorm1d + Dropout(0.3)</td></tr>
-  <tr><td>Số tham số</td><td>~<strong>1.7M</strong></td></tr>
-</table>
-<p><strong>Hạn chế:</strong> <code>Flatten</code> làm mất thông tin về vị trí không gian — pixel (0,0) và pixel (31,31) được xử lý như hai đặc trưng độc lập, không có quan hệ không gian. CNN giải quyết vấn đề này.</p>
+# Train: augmentation
+transforms.RandomCrop(32, padding=4)    # dịch chuyển ảnh ±4px
+transforms.RandomHorizontalFlip()       # lật ngang xác suất 50%
+transforms.Normalize(mean, std)
 
-<h2>2.3 SimpleCNN</h2>
-<p><strong>Ý tưởng:</strong> Khai thác cấu trúc không gian của ảnh thông qua tích chập cục bộ.</p>
-<pre>ConvBlock1: Conv(3→32)×2 + BN + ReLU + MaxPool(2)  → [B, 32, 16, 16]
-ConvBlock2: Conv(32→64)×2 + BN + ReLU + MaxPool(2) → [B, 64, 8, 8]
-ConvBlock3: Conv(64→128)×2 + BN + ReLU + MaxPool(2)→ [B, 128, 4, 4]
-AdaptiveAvgPool(1) → Flatten → Linear(128, 256) → ReLU → Dropout(0.3) → Linear(256, 100)</pre>
+# Val/Test: chỉ normalize, không augment</pre>
 
-<table>
-  <tr><th>Tham số</th><th>Giá trị</th></tr>
-  <tr><td>Conv blocks</td><td>3 (channels: 32 → 64 → 128)</td></tr>
-  <tr><td>Kernel size</td><td>3×3, padding=1 (giữ nguyên spatial size)</td></tr>
-  <tr><td>Pooling</td><td>MaxPool(2) giảm spatial xuống 1/2</td></tr>
-  <tr><td>AdaptiveAvgPool</td><td>Thay vì Flatten(128×4×4=2048) → giảm params</td></tr>
-  <tr><td>Số tham số</td><td>~<strong>346.6K</strong></td></tr>
-</table>
-
-<p><strong>Ưu điểm của CNN:</strong></p>
-<ul>
-  <li><strong>Locality:</strong> mỗi neuron chỉ "nhìn" vùng 3×3 — học đặc trưng cục bộ (cạnh, góc, texture)</li>
-  <li><strong>Weight sharing:</strong> cùng bộ lọc áp dụng tại mọi vị trí → giảm params đáng kể</li>
-  <li><strong>Translation invariance:</strong> nhận diện đặc trưng bất kể vị trí trong ảnh</li>
-</ul>
-
-<h2>2.4 SimpleViT (Vision Transformer dùng PyTorch)</h2>
-<p><strong>Ý tưởng:</strong> Chia ảnh thành các "patches" và xử lý như chuỗi tokens qua Transformer.</p>
-<pre>1. Patch Embedding: Conv2d(3, 128, kernel=4, stride=4) → [B, 128, 8, 8] → [B, 64, 128]
-   (64 patches 4×4, mỗi patch embed thành 128-dim vector)
-2. CLS Token: [B, 1, 128] prepend → [B, 65, 128]
-3. Positional Encoding: [1, 65, 128] (learnable)
-4. TransformerEncoder: 4 layers, d_model=128, nhead=4, dim_ffn=512, Pre-LN
-5. Head: LayerNorm → CLS token [:, 0] → Linear(128, 100)</pre>
-
-<table>
-  <tr><th>Tham số</th><th>Giá trị</th></tr>
-  <tr><td>Patch size</td><td>4×4 (lý do: 32/4=8 → 64 patches)</td></tr>
-  <tr><td>d_model</td><td>128</td></tr>
-  <tr><td>Số heads</td><td>4 (mỗi head: 32-dim)</td></tr>
-  <tr><td>Số layers</td><td>4</td></tr>
-  <tr><td>FFN dim</td><td>512 (= 4 × d_model)</td></tr>
-  <tr><td>Số tham số</td><td>~<strong>821.0K</strong></td></tr>
-</table>
-
-<div class="highlight">
-  <strong>Tại sao patch_size=4 (không phải 16)?</strong> ViT-B/16 gốc dùng patch 16×16 cho ảnh 224×224 → 196 patches. Với CIFAR-100 (32×32): patch 16×16 → chỉ <strong>4 patches</strong> — quá ít thông tin. Patch 4×4 → <strong>64 patches</strong> — cân bằng tốt hơn.
+<div class="callout info">
+  <span class="icon">ℹ️</span>
+  <span><strong>Tại sao không dùng ImageNet stats?</strong> CIFAR-100 và ImageNet có phân phối màu rất khác nhau. Dùng sai stats làm dữ liệu không được chuẩn hoá đúng cách, ảnh hưởng đến tốc độ hội tụ và kết quả cuối cùng. Luôn tính mean/std từ chính tập train.</span>
 </div>
 
-<hr>
+<!-- ════════════════ PART 1 ════════════════ -->
+<h1 class="section" id="part1">2. Phần 1 — Xây dựng 4 Mô hình Phân loại</h1>
+<p>Tất cả mô hình nhận input <code>[B, 3, 32, 32]</code> và trả về logits <code>[B, 100]</code>.</p>
 
-<!-- SECTION 3: PART 2 -->
-<h1>3. Phần 2 — Vòng lặp Huấn luyện và So sánh</h1>
+<h2>2.1 Softmax Regression — Mô hình tuyến tính</h2>
+<pre>[B,3,32,32] → Flatten → [B, 3072] → Linear(3072, 100) → [B, 100]</pre>
+<div class="table-wrap">
+<table>
+  <tr><th>Tham số</th><th>Giá trị</th></tr>
+  <tr><td>Input features</td><td>3 × 32 × 32 = 3 072</td></tr>
+  <tr><td>Số tham số</td><td>307 300 (307.3K)</td></tr>
+  <tr><td>Activation</td><td>Không — softmax tính trong CrossEntropyLoss</td></tr>
+  <tr><td>Hạn chế</td><td>Chỉ học biên quyết định tuyến tính</td></tr>
+</table>
+</div>
 
-<h2>3.1 Vòng lặp huấn luyện tự viết</h2>
-<p>Theo yêu cầu, <strong>không dùng</strong> <code>trainer.fit()</code> hay API cấp cao. Tự viết từng bước:</p>
+<h2>2.2 MLP — Mạng fully-connected đa lớp</h2>
+<pre>Flatten → FC(3072→512)+BN+ReLU+Drop(0.3)
+        → FC(512→256)+BN+ReLU+Drop(0.3)
+        → FC(256→100)</pre>
+
+<h2>2.3 SimpleCNN — Tích chập VGG-style</h2>
+<pre>ConvBlock1: [Conv(3→32)+BN+ReLU]×2 + MaxPool(2)  → [B, 32, 16, 16]
+ConvBlock2: [Conv(32→64)+BN+ReLU]×2 + MaxPool(2) → [B, 64,  8,  8]
+ConvBlock3: [Conv(64→128)+BN+ReLU]×2 + MaxPool(2)→ [B,128,  4,  4]
+AdaptiveAvgPool(1) → FC(128→256)+ReLU+Drop(0.3) → FC(256→100)</pre>
+
+<h2>2.4 SimpleViT — Vision Transformer</h2>
+<pre>Patch Embed: Conv2d(3,128,k=4,s=4) → [B,128,8,8] → flatten → [B,64,128]
+CLS prepend → [B,65,128]  |  PosEmbed(learnable) [1,65,128]
+TransformerEncoder: 4 layers, d=128, nhead=4, ffn=512, Pre-LN
+Head: LN → CLS[:,0] → Linear(128,100)</pre>
+
+<div class="callout info">
+  <span class="icon">🔍</span>
+  <span><strong>Tại sao patch_size=4 không phải 16?</strong> ViT-B/16 gốc dùng patch 16×16 cho ảnh 224×224 → 196 patches. Với 32×32: patch 16×16 → chỉ <strong>4 patches</strong> — quá ít. Patch 4×4 → <strong>64 patches</strong> — đủ thông tin không gian.</span>
+</div>
+
+<!-- ════════════════ PART 2 ════════════════ -->
+<h1 class="section" id="part2">3. Phần 2 — Training Loop &amp; Kết quả Phần 1+2</h1>
+
+<h2>3.1 Training Loop tự viết</h2>
 <pre>def train_one_epoch(model, loader, optimizer, criterion, device):
-    model.train()  # bật dropout, BN training mode
+    model.train()
     for x, y in loader:
         x, y = x.to(device), y.to(device)
-        optimizer.zero_grad()          # 1. Xoá gradient cũ
-        logits = model(x)              # 2. Forward pass
-        loss = criterion(logits, y)    # 3. Tính loss (CrossEntropyLoss)
-        loss.backward()                # 4. Backpropagation
+        optimizer.zero_grad()                              # 1. Xoá gradient cũ
+        logits = model(x)                                  # 2. Forward pass
+        loss = criterion(logits, y)                        # 3. CrossEntropyLoss
+        loss.backward()                                    # 4. Backpropagation
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)  # 5. Gradient clipping
-        optimizer.step()               # 6. Cập nhật tham số</pre>
+        optimizer.step()                                   # 6. Cập nhật tham số
+    # Optimizer: AdamW(weight_decay=1e-4) + CosineAnnealingLR</pre>
 
-<p><strong>Gradient clipping (max_norm=1.0):</strong> Nếu norm vector gradient vượt quá 1.0, scale xuống. Ngăn "exploding gradients", đặc biệt quan trọng với RNN và Transformer.</p>
-
-<h2>3.2 Cấu hình Hyperparameters</h2>
+<h2>3.2 Hyperparameters</h2>
+<div class="table-wrap">
 <table>
-  <tr><th>Mô hình</th><th>LR</th><th>Batch</th><th>Epochs</th><th>Optimizer</th><th>Scheduler</th></tr>
-  <tr><td>SoftmaxRegression</td><td>0.1</td><td>256</td><td>30</td><td>AdamW</td><td>CosineAnnealing</td></tr>
-  <tr><td>MLP</td><td>1e-3</td><td>128</td><td>50</td><td>AdamW</td><td>CosineAnnealing</td></tr>
-  <tr><td>SimpleCNN</td><td>1e-3</td><td>128</td><td>50</td><td>AdamW</td><td>CosineAnnealing</td></tr>
-  <tr><td>SimpleViT</td><td>3e-4</td><td>128</td><td>100</td><td>AdamW</td><td>CosineAnnealing</td></tr>
+  <tr><th>Mô hình</th><th>LR</th><th>Batch</th><th>Epochs</th><th>Optimizer</th></tr>
+  <tr><td>SoftmaxRegression</td><td>0.1</td><td>256</td><td>30</td><td>AdamW + CosineAnnealing</td></tr>
+  <tr><td>MLP</td><td>1e-3</td><td>128</td><td>50</td><td>AdamW + CosineAnnealing</td></tr>
+  <tr><td>SimpleCNN</td><td>1e-3</td><td>128</td><td>50</td><td>AdamW + CosineAnnealing</td></tr>
+  <tr><td>SimpleViT</td><td>3e-4</td><td>128</td><td>100</td><td>AdamW + CosineAnnealing</td></tr>
 </table>
-<p><strong>CosineAnnealingLR:</strong> Learning rate giảm theo đường cosine từ <code>lr → lr×0.01</code> trong <code>T_max</code> epochs. Hỗ trợ hội tụ tốt ở giai đoạn cuối. <strong>Weight decay:</strong> 1e-4 cho tất cả (L2 regularization qua AdamW).</p>
+</div>
 
-<h2>3.3 Kết quả Phần 1 &amp; 2</h2>
+<h2>3.3 Training Curves — Từng mô hình</h2>
+
+<div class="fig-grid col-2">
+  <figure>
+    <img src="exercise_plots/softmax_curves.png" alt="Softmax training curves">
+    <figcaption><strong>Hình 1a.</strong> Softmax Regression — Loss &amp; Accuracy qua 30 epochs</figcaption>
+  </figure>
+  <figure>
+    <img src="exercise_plots/mlp_curves.png" alt="MLP training curves">
+    <figcaption><strong>Hình 1b.</strong> MLP — Loss &amp; Accuracy qua 50 epochs</figcaption>
+  </figure>
+  <figure>
+    <img src="exercise_plots/cnn_curves.png" alt="CNN training curves">
+    <figcaption><strong>Hình 1c.</strong> SimpleCNN — Loss &amp; Accuracy qua 50 epochs</figcaption>
+  </figure>
+  <figure>
+    <img src="exercise_plots/vit_curves.png" alt="ViT training curves">
+    <figcaption><strong>Hình 1d.</strong> SimpleViT — Loss &amp; Accuracy qua 100 epochs</figcaption>
+  </figure>
+</div>
+
+<div class="analysis">
+  <h4>Phân tích training curves</h4>
+  <ul>
+    <li><strong>Softmax (Hình 1a):</strong> Val accuracy dao động quanh 8% và <em>không cải thiện</em> sau vài epoch đầu — training loss cũng giảm rất chậm. Đây là dấu hiệu của <em>underfitting</em>: mô hình tuyến tính không đủ capacity để học boundary phi tuyến của 100 lớp.</li>
+    <li><strong>MLP (Hình 1b):</strong> Val accuracy tăng đều đến ~epoch 30 rồi plateau. Khoảng cách train/val accuracy nhỏ → ít overfitting. Tuy nhiên val accuracy dừng ở 20.7% vì Flatten phá vỡ spatial structure.</li>
+    <li><strong>SimpleCNN (Hình 1c):</strong> Đường cong học đẹp nhất — val accuracy tăng liên tục, hội tụ ổn định tại ~36%. Khoảng cách train/val nhỏ → BatchNorm + Dropout điều hoà tốt. Loss giảm smooth nhờ CosineAnnealing.</li>
+    <li><strong>SimpleViT (Hình 1d):</strong> Hội tụ chậm hơn CNN (cần 100 epochs). Val accuracy vẫn tăng nhẹ ở cuối → ViT chưa bão hoà, cần thêm epochs. Đây là đặc điểm của Transformer: cần nhiều data + epochs hơn CNN.</li>
+  </ul>
+</div>
+
+<h2>3.4 So sánh kết quả Phần 1+2</h2>
+
+<figure>
+  <img src="exercise_plots/part1_2_bar.png" alt="Part 1+2 bar chart comparison">
+  <figcaption><strong>Hình 2.</strong> So sánh Test Accuracy của 4 mô hình Phần 1+2. SimpleCNN dẫn đầu với 35.88%, gấp hơn 4× so với Softmax Regression.</figcaption>
+</figure>
+
+<div class="table-wrap">
 <table>
-  <tr><th>Mô hình</th><th>Test Acc</th><th>Val Acc</th><th>F1-macro</th><th>Params</th></tr>
-  <tr><td>SoftmaxRegression</td><td>7.94%</td><td>8.34%</td><td>6.09%</td><td>307.3K</td></tr>
-  <tr><td>MLP</td><td>20.63%</td><td>20.68%</td><td>18.31%</td><td>1.7M</td></tr>
-  <tr><td>SimpleViT</td><td>24.47%</td><td>25.54%</td><td>22.35%</td><td>821.0K</td></tr>
-  <tr><td><strong>SimpleCNN</strong></td><td><strong>35.88%</strong></td><td><strong>36.38%</strong></td><td><strong>34.48%</strong></td><td>346.6K</td></tr>
+  <tr><th>Mô hình</th><th>Test Acc</th><th>Val Acc</th><th>F1-macro</th><th>Params</th><th>Ghi chú</th></tr>
+  <tr><td>SoftmaxRegression</td><td class="worst">7.94%</td><td>8.34%</td><td class="worst">6.09%</td><td>307.3K</td><td>Underfitting — tuyến tính</td></tr>
+  <tr><td>MLP</td><td>20.63%</td><td>20.68%</td><td>18.31%</td><td>1.7M</td><td>Mất spatial structure</td></tr>
+  <tr><td>SimpleViT</td><td>24.47%</td><td>25.54%</td><td>22.35%</td><td>821.0K</td><td>Cần nhiều data hơn</td></tr>
+  <tr class="rank-1"><td><strong>SimpleCNN</strong></td><td class="best">35.88%</td><td>36.38%</td><td class="best">34.48%</td><td>346.6K</td><td class="best">Hiệu quả nhất</td></tr>
 </table>
+</div>
 
-<h2>3.4 Nhận xét Phần 1 &amp; 2</h2>
-<p><strong>Softmax Regression (7.94%):</strong> Chỉ học được biên quyết định tuyến tính → không thể phân biệt 100 lớp với các đặc trưng phi tuyến phức tạp. Kết quả chỉ tốt hơn random (1%) khoảng 8 lần — xác nhận tính giới hạn của mô hình tuyến tính.</p>
-<p><strong>MLP (20.63%):</strong> Học được đặc trưng phi tuyến nhờ ReLU, nhưng <code>Flatten</code> phá vỡ cấu trúc không gian 2D của ảnh. Mỗi pixel xử lý độc lập → không biết pixel (i,j) và (i,j+1) ở cạnh nhau. Hiệu năng cao hơn Softmax 2.6× nhưng vẫn thua CNN nhiều.</p>
-<p><strong>SimpleCNN (35.88%) — tốt nhất Phần 1:</strong> Tích chập cục bộ học đặc trưng từ vùng lân cận (edges, corners, textures). Weight sharing giảm params nhưng không giảm khả năng biểu diễn. Đây là bằng chứng rõ ràng của <strong>inductive bias phù hợp</strong> với cấu trúc không gian của ảnh.</p>
-<p><strong>SimpleViT (24.47%):</strong> Thấp hơn CNN vì: (1) ViT không có spatial inductive bias → phải học hoàn toàn từ data; (2) 45K mẫu train là quá ít cho Transformer học từ đầu; (3) ViT thực sự mạnh khi có pretrained trên hàng triệu ảnh (ImageNet-21K).</p>
+<div class="analysis">
+  <h4>Phân tích khoa học — Phần 1+2</h4>
+  <ul>
+    <li><strong>SimpleCNN (35.88%) vượt MLP (20.63%) dù ít params hơn (346.6K vs 1.7M):</strong> Chứng minh <em>inductive bias</em> — tích chập cục bộ phù hợp với cấu trúc 2D của ảnh. MLP có nhiều tham số hơn nhưng mỗi kết nối xử lý pixel độc lập, không tận dụng được thông tin không gian lân cận.</li>
+    <li><strong>SimpleViT (24.47%) kém SimpleCNN:</strong> Vision Transformer lý thuyết mạnh hơn, nhưng <em>không có spatial inductive bias</em> — phải học mọi thứ từ data. Với chỉ 45K mẫu train (450/lớp), ViT chưa đủ data để học được các pattern không gian tốt như CNN.</li>
+    <li><strong>F1-macro thấp hơn accuracy:</strong> Với 100 lớp không cân bằng (450 train/lớp), một số lớp khó (visual similarity cao) có recall thấp → kéo F1-macro xuống. Khoảng cách F1 vs Acc lớn ở Softmax (7.94% vs 6.09%) cho thấy mô hình tập trung vào vài lớp dễ.</li>
+    <li><strong>Val ≈ Test accuracy:</strong> Khoảng cách nhỏ (&lt;1%) xác nhận không có data leakage và split strategy (45/5/10k) là hợp lý.</li>
+  </ul>
+</div>
 
-<hr>
+<!-- ════════════════ PART 3 ════════════════ -->
+<h1 class="section" id="part3">4. Phần 3 — Custom TransformerEncoder từ đầu</h1>
 
-<!-- SECTION 4: PART 3 -->
-<h1>4. Phần 3 — Tự hiện thực TransformerEncoder</h1>
-
-<h2>4.1 Yêu cầu</h2>
-<p>Hiện thực TransformerEncoder <strong>từ các phép toán cơ bản</strong>: <code>nn.Linear</code>, <code>nn.LayerNorm</code>, <code>torch.einsum</code>. <strong>Không dùng</strong> <code>nn.TransformerEncoderLayer</code> hoặc <code>nn.TransformerEncoder</code>.</p>
+<h2>4.1 Yêu cầu và ràng buộc hiện thực</h2>
+<p>Hiện thực TransformerEncoder <strong>chỉ dùng</strong>: <code>nn.Linear</code>, <code>nn.LayerNorm</code>, <code>torch.einsum</code>, <code>F.softmax</code>. Không được dùng <code>nn.MultiheadAttention</code>, <code>nn.TransformerEncoderLayer</code>, hay <code>nn.TransformerEncoder</code>.</p>
 
 <h2>4.2 Custom Multi-Head Self-Attention</h2>
-<p><strong>Lý thuyết:</strong> Mỗi token (patch) tính xem nên "chú ý" đến token khác bao nhiêu.</p>
-<pre>Q = X @ W_q   (Queries — "Tôi đang tìm kiếm gì?")
-K = X @ W_k   (Keys   — "Tôi có thể cung cấp gì?")
-V = X @ W_v   (Values — "Thông tin thực của tôi")
-
-scores = Q @ K^T / sqrt(d_head)
-attn   = softmax(scores, dim=-1)
-output = attn @ V</pre>
-
-<p><strong>Hiện thực với einsum:</strong></p>
 <pre>class CustomMultiHeadAttention(nn.Module):
-    def __init__(self, d_model, num_heads):
-        self.W_q = nn.Linear(d_model, d_model, bias=False)
-        self.W_k = nn.Linear(d_model, d_model, bias=False)
-        self.W_v = nn.Linear(d_model, d_model, bias=False)
-        self.W_o = nn.Linear(d_model, d_model)
+    # Bước 1: Linear projection
+    Q = W_q(x).reshape(B, T, H, d_h).transpose(1,2)  # [B, H, T, d_h]
+    K = W_k(x).reshape(B, T, H, d_h).transpose(1,2)  # [B, H, T, d_h]
+    V = W_v(x).reshape(B, T, H, d_h).transpose(1,2)  # [B, H, T, d_h]
 
-    def forward(self, x):  # x: [B, T, d_model]
-        Q = self.W_q(x).reshape(B, T, H, d_h).transpose(1, 2)  # [B, H, T, d_h]
-        K = self.W_k(x) ...
-        V = self.W_v(x) ...
+    # Bước 2: Scaled dot-product attention
+    # 'bhid,bhjd->bhij': query[i] dot key[j] cho mọi (batch, head)
+    scores = torch.einsum('bhid,bhjd->bhij', Q, K) / sqrt(d_h)  # [B,H,T,T]
+    attn   = F.softmax(scores, dim=-1)                            # [B,H,T,T]
 
-        # 'bhid,bhjd->bhij': query i dot-product với key j, cho mọi (b,h)
-        scores = torch.einsum('bhid,bhjd->bhij', Q, K) / sqrt(d_head)
-        attn   = F.softmax(scores, dim=-1)
+    # Bước 3: Aggregate values
+    # 'bhij,bhjd->bhid': tổng có trọng số theo j
+    out = torch.einsum('bhij,bhjd->bhid', attn, V)               # [B,H,T,d_h]
+    return W_o(out.reshape(B, T, d_model))</pre>
 
-        # 'bhij,bhjd->bhid': tổng có trọng số của values
-        out = torch.einsum('bhij,bhjd->bhid', attn, V)
-        return self.W_o(out.reshape(B, T, d_model))</pre>
-
-<p><strong>Ký hiệu einsum:</strong> <code>b</code>=batch, <code>h</code>=head, <code>i</code>=query position, <code>j</code>=key position, <code>d</code>=d_head.</p>
+<div class="callout info">
+  <span class="icon">📐</span>
+  <span><strong>Ký hiệu einsum:</strong> <code>b</code>=batch, <code>h</code>=head, <code>i</code>=query pos, <code>j</code>=key pos, <code>d</code>=d_head. Phép tính <code>bhid,bhjd→bhij</code> là dot-product song song trên tất cả batch và head cùng lúc — hiệu quả hơn vòng for.</span>
+</div>
 
 <h2>4.3 Pre-LN vs Post-LN</h2>
+<div class="table-wrap">
 <table>
-  <tr><th>Kiểu</th><th>Công thức</th><th>Đặc điểm</th></tr>
-  <tr><td>Post-LN (paper gốc)</td><td><code>x = LayerNorm(x + Attention(x))</code></td><td>LN sau residual → gradient lớn hơn, cần warmup</td></tr>
-  <tr><td><strong>Pre-LN (được chọn)</strong></td><td><code>x = x + Attention(LayerNorm(x))</code></td><td>LN trước attention → gradient ổn định, dễ train</td></tr>
+  <tr><th>Variant</th><th>Công thức</th><th>Gradient stability</th><th>Cần warmup?</th></tr>
+  <tr><td>Post-LN (paper gốc 2017)</td><td><code>x = LN(x + Attn(x))</code></td><td>Kém hơn (gradient lớn lúc đầu)</td><td>Có</td></tr>
+  <tr class="rank-1"><td><strong>Pre-LN (dùng ở đây)</strong></td><td><code>x = x + Attn(LN(x))</code></td><td>Ổn định hơn</td><td>Không bắt buộc</td></tr>
 </table>
+</div>
 
-<h2>4.4 Kết quả Phần 3</h2>
+<h2>4.4 Training curves — Phần 3</h2>
+
+<figure>
+  <img src="exercise_plots/part3_comparison_curves.png" alt="Part 3 training curves">
+  <figcaption><strong>Hình 3.</strong> Training curves của SimpleViT (PyTorch) và CustomViT (tự xây) — cùng cấu hình, cùng số epochs. Hai đường curve có dạng tương tự xác nhận hiện thực Custom encoder là đúng.</figcaption>
+</figure>
+
+<figure>
+  <img src="exercise_plots/part3_bar.png" alt="Part 3 bar chart">
+  <figcaption><strong>Hình 4.</strong> So sánh Test Accuracy Phần 3. CustomViT (34.56%) vượt PyTorch ViT (31.92%) — chênh lệch ~2.6% do khởi tạo ngẫu nhiên, không phải lỗi hiện thực.</figcaption>
+</figure>
+
+<div class="table-wrap">
 <table>
   <tr><th>Mô hình</th><th>Encoder</th><th>Test Acc</th><th>Val Acc</th><th>F1-macro</th><th>Params</th></tr>
   <tr><td>SimpleViT (PyTorch)</td><td>nn.TransformerEncoder</td><td>31.92%</td><td>33.00%</td><td>30.39%</td><td>821.0K</td></tr>
-  <tr><td><strong>CustomViT (Tự xây)</strong></td><td>Custom (einsum)</td><td><strong>34.56%</strong></td><td><strong>35.80%</strong></td><td><strong>33.11%</strong></td><td>819.4K</td></tr>
+  <tr class="rank-1"><td><strong>CustomViT (Tự xây)</strong></td><td>Custom einsum</td><td class="best">34.56%</td><td class="best">35.80%</td><td class="best">33.11%</td><td>819.4K</td></tr>
 </table>
+</div>
 
-<h2>4.5 Nhận xét Phần 3</h2>
-<p><strong>CustomViT đạt 34.56% — cao hơn PyTorch ViT (31.92%):</strong> Khoảng chênh lệch ~2.64% có thể do khởi tạo weights ngẫu nhiên khác nhau. <strong>Kết luận chính:</strong> Hai mô hình đạt accuracy <strong>gần bằng nhau</strong> (~32–35%), xác nhận rằng hiện thực Custom TransformerEncoder là <strong>đúng đắn về mặt toán học</strong>. Số tham số gần giống nhau (821.0K vs 819.4K).</p>
+<div class="analysis">
+  <h4>Phân tích khoa học — Phần 3</h4>
+  <ul>
+    <li><strong>Hai đường training curve có hình dạng tương tự (Hình 3):</strong> Tốc độ học, điểm bão hoà, và pattern của train/val curve gần giống nhau — bằng chứng mạnh rằng Custom MHA hoạt động đúng cơ chế toán học như PyTorch MHA.</li>
+    <li><strong>CustomViT cao hơn PyTorch ViT (+2.64%):</strong> Với chỉ 2 lần chạy (không ensemble/seed averaging), khoảng chênh lệch này hoàn toàn nằm trong biên độ ngẫu nhiên do khởi tạo weights khác nhau. Không thể kết luận custom tốt hơn — chỉ kết luận chúng <em>tương đương</em>.</li>
+    <li><strong>Cả hai đều vượt SimpleViT ở Phần 1 (24.47%):</strong> Phần 3 train thêm nhiều epochs hơn → xác nhận ViT cần nhiều epochs để hội tụ. Đây là điểm khác biệt căn bản giữa ViT và CNN: CNN hội tụ nhanh hơn trong 50 epochs, ViT cần nhiều hơn.</li>
+    <li><strong>Số params gần nhau (819.4K vs 821.0K):</strong> Sai khác nhỏ do custom impl có thể bỏ qua một số bias term. Về mặt kiến trúc là hoàn toàn tương đương.</li>
+  </ul>
+</div>
 
-<hr>
+<!-- ════════════════ PART 4 ════════════════ -->
+<h1 class="section" id="part4">5. Phần 4 — Kiến trúc Tokenization Đa dạng</h1>
 
-<!-- SECTION 5: PART 4 -->
-<h1>5. Phần 4 — Kiến trúc Kết hợp và Cách Embed Ảnh Khác nhau</h1>
+<h2>5.1 Ba cách biểu diễn ảnh thành tokens</h2>
+<div class="table-wrap">
+<table>
+  <tr><th>Kiến trúc</th><th>Cách tạo tokens</th><th>Seq len</th><th>Token dim</th><th>Attention cost</th></tr>
+  <tr><td>CNN+Transformer Hybrid</td><td>CNN features (8×8 spatial)</td><td>64</td><td>128</td><td>O(64²) = 4 096</td></tr>
+  <tr><td>ChannelToken ViT</td><td>64 channels sau Conv1×1</td><td>64</td><td>128</td><td>O(64²) = 4 096</td></tr>
+  <tr><td>SpatialToken ViT</td><td>32×32 = 1024 raw pixels</td><td>1024</td><td>64</td><td>O(1024²) = 1 048 576</td></tr>
+</table>
+</div>
 
-<h2>5.1 Kiến trúc 4A: CNN + Transformer Hybrid</h2>
-<p><strong>Ý tưởng:</strong> Dùng CNN làm backbone trích đặc trưng, sau đó đưa vào Transformer.</p>
-<pre>[B,3,32,32] → CNN Block1(3→32)+Pool → [B,32,16,16]
-            → CNN Block2(32→64)+Pool → [B,64,8,8]
-            → Reshape [B,64,64] → Linear(64,128) → [B,64,128]
-            → CLS + PosEmbed → 2×TransformerLayer(d=128, h=4)
-            → CLS token → Linear(128,100)</pre>
-<p><strong>Lý do hiệu quả:</strong> CNN xử lý đặc trưng cục bộ (local features), Transformer học quan hệ toàn cục (global dependencies). Kết hợp hai thế mạnh. Số tokens vừa phải (64) → attention O(64²) hiệu quả.</p>
+<h2>5.2 Kiến trúc chi tiết</h2>
 
-<h2>5.2 Kiến trúc 4B: Spatial Token ViT (H×W positions làm tokens)</h2>
-<p><strong>Ý tưởng:</strong> Mỗi trong 32×32 = 1024 vị trí pixel là một token.</p>
-<pre>[B,3,32,32] → Reshape [B,1024,3] → Linear(3,64) → [B,1024,64]
+<h3>4A — CNN+Transformer Hybrid</h3>
+<pre>[B,3,32,32] → Conv(3→32)+Pool → [B,32,16,16]
+            → Conv(32→64)+Pool → [B,64,8,8]
+            → reshape [B,64,64] → FC(64→128) → [B,64,128]   # 64 CNN tokens
+            → CLS + PosEmbed → 2×TransformerLayer(d=128,h=4)
+            → CLS[:,0] → FC(128,100)</pre>
+
+<h3>4B — SpatialToken ViT</h3>
+<pre>[B,3,32,32] → reshape [B,1024,3] → FC(3,64) → [B,1024,64]  # 1024 pixel tokens!
             → PosEmbed → 2×TransformerLayer(d=64,h=4)
-            → Global Avg Pool → Linear(64,100)</pre>
-<p><strong>Vấn đề:</strong> Attention matrix có kích thước [B, H, 1024, 1024] — với batch=32, 4 heads: ~512MB RAM → phải dùng batch_size=32.</p>
+            → GlobalAvgPool → FC(64,100)
+# Vấn đề: attention matrix [B,H,1024,1024] = ~512MB với batch=32</pre>
 
-<h2>5.3 Kiến trúc 4C: Channel Token ViT (C channels làm tokens)</h2>
-<p><strong>Ý tưởng:</strong> Mỗi channel là một token, spatial features là feature vector.</p>
-<pre>[B,3,32,32] → Conv2d(3→64,1×1)+BN+ReLU → [B,64,32,32]
-            → Reshape [B,64,1024] → Linear(1024,128) → [B,64,128]
+<h3>4C — ChannelToken ViT</h3>
+<pre>[B,3,32,32] → Conv1×1(3→64)+BN+ReLU → [B,64,32,32]
+            → reshape [B,64,1024] → FC(1024,128) → [B,64,128]  # 64 channel tokens
             → PosEmbed → 2×TransformerLayer(d=128,h=4)
-            → Global Avg Pool → Linear(128,100)</pre>
-<p><strong>Ý nghĩa:</strong> Mỗi "token" biểu diễn "đặc trưng kênh này xuất hiện ở đâu?". Liên quan đến channel attention trong SENet.</p>
+            → GlobalAvgPool → FC(128,100)</pre>
 
-<h2>5.4 Kết quả Phần 4</h2>
+<h2>5.3 Training curves — Phần 4</h2>
+
+<figure>
+  <img src="exercise_plots/part4_comparison_curves.png" alt="Part 4 training curves">
+  <figcaption><strong>Hình 5.</strong> Training curves của 3 kiến trúc Phần 4. CNNTransformer hội tụ tốt và ổn định. SpatialToken ViT và ChannelToken ViT bị plateau sớm ở mức rất thấp — dấu hiệu token quality kém.</figcaption>
+</figure>
+
+<figure>
+  <img src="exercise_plots/part4_bar.png" alt="Part 4 bar chart">
+  <figcaption><strong>Hình 6.</strong> So sánh Test Accuracy Phần 4. Khoảng cách rất lớn giữa CNN+Transformer (37.25%) và hai mô hình còn lại chứng minh tầm quan trọng của chất lượng token.</figcaption>
+</figure>
+
+<div class="table-wrap">
 <table>
   <tr><th>Mô hình</th><th>Tokenization</th><th>Seq Len</th><th>Test Acc</th><th>Val Acc</th><th>F1-macro</th><th>Params</th></tr>
-  <tr><td><strong>CNN+Transformer</strong></td><td>CNN features</td><td>64</td><td><strong>37.25%</strong></td><td><strong>38.90%</strong></td><td><strong>35.87%</strong></td><td>446.1K</td></tr>
+  <tr class="rank-1"><td><strong>CNN+Transformer</strong></td><td>CNN features</td><td>64</td><td class="best">37.25%</td><td class="best">38.90%</td><td class="best">35.87%</td><td>446.1K</td></tr>
   <tr><td>ChannelToken ViT</td><td>C channels</td><td>64</td><td>17.56%</td><td>18.18%</td><td>15.29%</td><td>549.5K</td></tr>
-  <tr><td>SpatialToken ViT</td><td>H×W pixels</td><td>1024</td><td>13.10%</td><td>13.12%</td><td>9.86%</td><td>172.4K</td></tr>
+  <tr><td>SpatialToken ViT</td><td>H×W pixels</td><td>1 024</td><td class="worst">13.10%</td><td class="worst">13.12%</td><td class="worst">9.86%</td><td>172.4K</td></tr>
 </table>
+</div>
 
-<h2>5.5 Nhận xét Phần 4</h2>
-<p><strong>CNN+Transformer Hybrid (37.25%) — tốt nhất toàn bộ bài tập:</strong> Kết hợp inductive bias của CNN (spatial locality) với global attention của Transformer tạo ra mô hình mạnh nhất. CNN giảm spatial size từ 32×32 → 8×8 trước khi đưa vào Transformer, giảm chi phí tính toán attention đáng kể.</p>
-<p><strong>SpatialToken ViT (13.10%) — kém nhất Phần 4:</strong> Đây là bài học quan trọng. 1024 tokens từ raw pixels có <strong>feature quá thô</strong> (chỉ 3 RGB values mỗi pixel). Transformer phải học từ thông tin rất ít ỏi cho mỗi token. Đây chính xác là lý do tại sao ViT gốc sử dụng <strong>patches</strong> thay vì pixels — mỗi patch 4×4 có 48 features, phong phú hơn nhiều so với 3 features mỗi pixel.</p>
-<p><strong>ChannelToken ViT (17.56%):</strong> Khái niệm channel attention có thể học được quan hệ giữa các đặc trưng kênh, nhưng cần CNN backbone mạnh hơn để expand channels một cách có ý nghĩa.</p>
+<div class="analysis">
+  <h4>Phân tích khoa học — Phần 4</h4>
+  <ul>
+    <li><strong>CNN+Transformer đạt 37.25% — cao nhất toàn bài:</strong> CNN backbone (2 ConvBlocks) không chỉ giảm spatial size từ 32×32→8×8 mà còn <em>học các đặc trưng có ý nghĩa</em> (edges, textures) trước khi đưa vào Transformer. Mỗi trong 64 tokens là một <em>học được đặc trưng phức tạp</em>, không phải raw pixel. Transformer sau đó học <em>quan hệ toàn cục</em> giữa các đặc trưng này.</li>
+    <li><strong>SpatialToken ViT thất bại hoàn toàn (13.10%):</strong> Mỗi pixel token chỉ có 3 giá trị RGB → <em>thông tin quá thô</em>. Transformer phải cùng lúc vừa học đặc trưng cục bộ vừa học quan hệ toàn cục từ 1024 tokens — quá khó. Đây chính xác là lý do ViT gốc (Dosovitskiy 2021) dùng patches thay vì pixels. Một patch 4×4 có 48 features, phong phú hơn 16× so với 3 RGB.</li>
+    <li><strong>ChannelToken ViT (17.56%) kém mặc dù cùng 64 tokens:</strong> Conv1×1 chỉ học linear combination của 3 channels đầu vào để tạo 64 channels. Đây không phải là đặc trưng spatial có ý nghĩa — chỉ là weight matrix. Cần CNN backbone sâu hơn để tạo ra channel tokens chất lượng cao.</li>
+    <li><strong>Kết luận: Token quality &gt; Token quantity:</strong> SpatialToken có 1024 tokens (16× nhiều hơn) nhưng kém CNN+Transformer với 64 CNN tokens. Chứng minh rằng <em>chất lượng thông tin mỗi token quan trọng hơn số lượng tokens</em>.</li>
+    <li><strong>Val ≈ Test cho SpatialToken (13.10% vs 13.12%):</strong> Không có overfitting — mô hình <em>underfitting nghiêm trọng</em>, không học được. Loss không giảm đáng kể suốt quá trình train (Hình 5).</li>
+  </ul>
+</div>
 
-<hr>
-
-<!-- SECTION 6: PART 5 -->
-<h1>6. Phần 5 — Mô hình LSTM/GRU</h1>
+<!-- ════════════════ PART 5 ════════════════ -->
+<h1 class="section" id="part5">6. Phần 5 — LSTM/GRU cho Phân loại Ảnh</h1>
 
 <h2>6.1 Cách biểu diễn ảnh thành chuỗi</h2>
-<p>Ảnh không phải chuỗi thời gian tự nhiên, nhưng ta có thể "đọc" ảnh theo nhiều cách:</p>
+<p>Ảnh 2D được "đọc" theo nhiều chiều để tạo chuỗi input cho RNN:</p>
+<div class="table-wrap">
 <table>
-  <tr><th>Seq Mode</th><th>Seq Length (T)</th><th>Input Size (D)</th><th>Mô tả</th></tr>
-  <tr><td><strong>Row-wise</strong></td><td>32</td><td>96 (=32×3)</td><td>Mỗi hàng pixels: [32, 96]</td></tr>
-  <tr><td>Col-wise</td><td>32</td><td>96 (=32×3)</td><td>Mỗi cột pixels: [32, 96]</td></tr>
-  <tr><td><strong>Patch4</strong></td><td>64 (=8×8)</td><td>48 (=4×4×3)</td><td>64 patches 4×4: [64, 48]</td></tr>
-  <tr><td>Patch8</td><td>16 (=4×4)</td><td>192 (=8×8×3)</td><td>16 patches 8×8: [16, 192]</td></tr>
+  <tr><th>Seq Mode</th><th>T (seq len)</th><th>D (input size)</th><th>Mô tả</th><th>Thông tin mỗi bước</th></tr>
+  <tr><td><strong>Row-wise</strong></td><td>32</td><td>96 = 32×3</td><td>Mỗi hàng pixels</td><td>Toàn bộ hàng ngang</td></tr>
+  <tr><td>Col-wise</td><td>32</td><td>96 = 32×3</td><td>Mỗi cột pixels</td><td>Toàn bộ cột dọc</td></tr>
+  <tr><td><strong>Patch4</strong></td><td>64 = 8×8</td><td>48 = 4×4×3</td><td>64 patches 4×4</td><td>Một patch nhỏ</td></tr>
+  <tr><td>Patch8</td><td>16 = 4×4</td><td>192 = 8×8×3</td><td>16 patches 8×8</td><td>Một patch lớn</td></tr>
 </table>
+</div>
 
-<h2>6.2 Kiến trúc LSTM/GRU</h2>
-<pre>input: [B, T, input_size]
-→ BiLSTM/BiGRU(hidden=256, layers=2, bidirectional=True)
-→ concat(h_n[-2], h_n[-1])  # forward + backward final states: [B, 512]
+<h2>6.2 Kiến trúc ImageLSTM / ImageGRU</h2>
+<pre>input: [B, T, input_size]   # T × D tuỳ theo seq_mode
+→ Bidirectional LSTM/GRU(hidden=256, num_layers=2, dropout=0.3)
+  # Tạo 2 luồng: forward (đọc hàng 0→31) + backward (đọc hàng 31→0)
+→ concat(h_n[-2], h_n[-1])  # [B, 512]  (forward + backward final state)
 → Dropout(0.3)
 → Linear(512, 100)</pre>
 
-<p><strong>Bidirectional:</strong> Đọc chuỗi theo cả 2 chiều → nắm bắt được context từ cả hai phía.</p>
-
+<div class="table-wrap">
 <table>
   <tr><th></th><th>LSTM</th><th>GRU</th></tr>
-  <tr><td>Gates</td><td>4 (forget, input, output, cell)</td><td>2 (reset, update)</td></tr>
-  <tr><td>Cell state</td><td>Có (c_t)</td><td>Không</td></tr>
-  <tr><td>Params/layer</td><td>4×(D+H)×H</td><td>3×(D+H)×H</td></tr>
-  <tr><td>Tốc độ</td><td>Chậm hơn</td><td>Nhanh hơn ~25%</td></tr>
+  <tr><td>Gates</td><td>4: forget (f), input (i), output (o), cell (g)</td><td>2: reset (r), update (z)</td></tr>
+  <tr><td>Cell state</td><td>Có (c_t — long-term memory)</td><td>Không (chỉ h_t)</td></tr>
+  <tr><td>Params/layer</td><td>4 × (D+H) × H + 4H</td><td>3 × (D+H) × H + 3H</td></tr>
+  <tr><td>Tốc độ huấn luyện</td><td>Chậm hơn ~25%</td><td>Nhanh hơn</td></tr>
+  <tr><td>Phù hợp</td><td>Chuỗi rất dài (&gt;1000 steps)</td><td>Chuỗi vừa (≤100 steps)</td></tr>
 </table>
+</div>
 
-<h2>6.3 Kết quả Phần 5</h2>
+<h2>6.3 Training curves — Phần 5</h2>
+
+<figure>
+  <img src="exercise_plots/part5_comparison_curves.png" alt="Part 5 training curves">
+  <figcaption><strong>Hình 7.</strong> Training curves của 4 cấu hình LSTM/GRU. GRU (cả row và patch4) hội tụ nhanh hơn và đạt val accuracy cao hơn LSTM đáng kể. LSTM-patch4 hội tụ chậm nhất — nhiều params nhất nhưng kết quả tệ nhất trong nhóm.</figcaption>
+</figure>
+
+<figure>
+  <img src="exercise_plots/part5_bar.png" alt="Part 5 bar chart">
+  <figcaption><strong>Hình 8.</strong> So sánh Test Accuracy Phần 5. GRU (cả 2 configs) vượt hẳn LSTM. GRU-row đạt 36.57% — gần bằng SimpleCNN!</figcaption>
+</figure>
+
+<div class="table-wrap">
 <table>
   <tr><th>Mô hình</th><th>Seq Mode</th><th>T</th><th>D</th><th>Test Acc</th><th>Val Acc</th><th>F1-macro</th><th>Params</th></tr>
-  <tr><td>LSTM</td><td>Row-wise</td><td>32</td><td>96</td><td>29.36%</td><td>29.62%</td><td>28.34%</td><td>2.4M</td></tr>
-  <tr><td>LSTM</td><td>Patch 4×4</td><td>64</td><td>48</td><td>27.73%</td><td>27.78%</td><td>26.41%</td><td>2.3M</td></tr>
-  <tr><td><strong>GRU</strong></td><td><strong>Row-wise</strong></td><td>32</td><td>96</td><td><strong>36.57%</strong></td><td><strong>36.44%</strong></td><td><strong>35.68%</strong></td><td>1.8M</td></tr>
-  <tr><td>GRU</td><td>Patch 4×4</td><td>64</td><td>48</td><td>35.64%</td><td>35.76%</td><td>34.99%</td><td>1.7M</td></tr>
+  <tr class="rank-1"><td><strong>GRU-row</strong></td><td>Row-wise</td><td>32</td><td>96</td><td class="best">36.57%</td><td class="best">36.44%</td><td class="best">35.68%</td><td>1.8M</td></tr>
+  <tr><td>GRU-patch4</td><td>Patch 4×4</td><td>64</td><td>48</td><td>35.64%</td><td>35.76%</td><td>34.99%</td><td>1.7M</td></tr>
+  <tr><td>LSTM-row</td><td>Row-wise</td><td>32</td><td>96</td><td>29.36%</td><td>29.62%</td><td>28.34%</td><td>2.4M</td></tr>
+  <tr><td>LSTM-patch4</td><td>Patch 4×4</td><td>64</td><td>48</td><td class="worst">27.73%</td><td class="worst">27.78%</td><td class="worst">26.41%</td><td>2.3M</td></tr>
 </table>
+</div>
 
-<h2>6.4 Nhận xét Phần 5</h2>
-<p><strong>GRU vượt trội LSTM đáng kể (36.57% vs 29.36% cho row-wise):</strong> Với CIFAR-100 và chuỗi tương đối ngắn (T=32), GRU có ít tham số hơn → train hiệu quả hơn → ít overfitting hơn trong cùng số epochs.</p>
-<p><strong>Row-wise tốt hơn Patch4-wise:</strong> Row-wise (T=32, D=96) cho mỗi bước thấy toàn bộ hàng → có context rộng hơn. Tuy nhiên sự khác biệt nhỏ (~1%), cho thấy cả hai cách biểu diễn đều tương đương.</p>
-<p><strong>LSTM/GRU kém CNN:</strong> Ảnh có cấu trúc <strong>2D</strong>, không phải chuỗi 1D. Đọc theo hàng làm mất quan hệ theo chiều dọc giữa các hàng; đọc theo patch làm mất quan hệ giữa các patch.</p>
+<div class="analysis">
+  <h4>Phân tích khoa học — Phần 5</h4>
+  <ul>
+    <li><strong>GRU vượt LSTM đáng kể (+7.2% với row, +7.9% với patch4):</strong> Đây là phát hiện <em>không trực quan</em>. LSTM có nhiều params và cơ chế phức tạp hơn, nhưng lại tệ hơn. Giải thích: chuỗi ảnh CIFAR ngắn (T=32 hoặc T=64) không cần long-term memory của LSTM. GRU ít params hơn → ít overfitting hơn → train hiệu quả hơn trong cùng 30 epochs. Khoảng cách train/val của LSTM lớn hơn GRU (Hình 7), xác nhận LSTM bị overfitting.</li>
+    <li><strong>GRU-row (36.57%) cạnh tranh ngang SimpleCNN (35.88%):</strong> Bất ngờ lớn nhất của bài tập. Với dữ liệu ảnh, RNN không phải lựa chọn tự nhiên, nhưng GRU bidirectional đọc ảnh theo hàng vẫn capture được một phần đặc trưng không gian. Tuy nhiên điều này <em>không</em> có nghĩa là GRU tốt hơn CNN — GRU cần nhiều params hơn (1.8M vs 346.6K) để đạt kết quả tương đương.</li>
+    <li><strong>Row-wise tốt hơn Patch4-wise cho cả LSTM và GRU:</strong> Mỗi "step" row-wise thấy toàn bộ hàng ngang (D=96) — nhiều thông tin không gian hơn. Patch4 chia ảnh thành 64 patches nhỏ (D=48) — mỗi patch chứa ít context hơn. Tuy nhiên sự khác biệt nhỏ (~1%) cho thấy hai cách biểu diễn tương đương nhau ở mức này.</li>
+    <li><strong>Bidirectional giúp gì?</strong> Đọc ảnh theo cả 2 chiều (trái→phải và phải→trái) giúp mỗi pixel "biết" context của cả 2 phía. Tuy nhiên vẫn chỉ capture được thông tin 1D (hàng hoặc cột), không phải 2D — đây là hạn chế cốt lõi của RNN với ảnh.</li>
+  </ul>
+</div>
 
-<hr>
+<!-- ════════════════ GRAND SUMMARY ════════════════ -->
+<h1 class="section" id="summary">7. Grand Summary — So sánh Tất cả Mô hình</h1>
 
-<!-- SECTION 7: GRAND SUMMARY -->
-<h1>7. Grand Summary — So sánh Tất cả Mô hình</h1>
-
+<h2>7.1 Bảng xếp hạng toàn bộ</h2>
+<div class="table-wrap">
 <table>
-  <tr><th>Hạng</th><th>Mô hình</th><th>Phần</th><th>Test Acc</th><th>F1-macro</th><th>Params</th><th>Kiến trúc</th></tr>
-  <tr><td>1</td><td><strong>CNN+Transformer Hybrid</strong></td><td>4</td><td><strong>37.25%</strong></td><td>35.87%</td><td>446.1K</td><td>Hybrid</td></tr>
-  <tr><td>2</td><td>GRU-row</td><td>5</td><td>36.57%</td><td>35.68%</td><td>1.8M</td><td>RNN</td></tr>
-  <tr><td>3</td><td>SimpleCNN</td><td>1</td><td>35.88%</td><td>34.48%</td><td>346.6K</td><td>CNN</td></tr>
-  <tr><td>4</td><td>GRU-patch4</td><td>5</td><td>35.64%</td><td>34.99%</td><td>1.7M</td><td>RNN</td></tr>
-  <tr><td>5</td><td>CustomViT (Tự xây)</td><td>3</td><td>34.56%</td><td>33.11%</td><td>819.4K</td><td>Transformer</td></tr>
-  <tr><td>6</td><td>SimpleViT (PyTorch)</td><td>3</td><td>31.92%</td><td>30.39%</td><td>821.0K</td><td>Transformer</td></tr>
-  <tr><td>7</td><td>LSTM-row</td><td>5</td><td>29.36%</td><td>28.34%</td><td>2.4M</td><td>RNN</td></tr>
-  <tr><td>8</td><td>LSTM-patch4</td><td>5</td><td>27.73%</td><td>26.41%</td><td>2.3M</td><td>RNN</td></tr>
-  <tr><td>9</td><td>SimpleViT (Phần 1)</td><td>1</td><td>24.47%</td><td>22.35%</td><td>821.0K</td><td>Transformer</td></tr>
-  <tr><td>10</td><td>MLP</td><td>1</td><td>20.63%</td><td>18.31%</td><td>1.7M</td><td>Fully Connected</td></tr>
-  <tr><td>11</td><td>ChannelToken ViT</td><td>4</td><td>17.56%</td><td>15.29%</td><td>549.5K</td><td>Transformer</td></tr>
-  <tr><td>12</td><td>SpatialToken ViT</td><td>4</td><td>13.10%</td><td>9.86%</td><td>172.4K</td><td>Transformer</td></tr>
-  <tr><td>13</td><td>SoftmaxRegression</td><td>1</td><td>7.94%</td><td>6.09%</td><td>307.3K</td><td>Linear</td></tr>
+  <tr><th>#</th><th>Mô hình</th><th>Phần</th><th>Kiến trúc</th><th>Test Acc</th><th>F1-macro</th><th>Params</th><th>Acc/Param</th></tr>
+  <tr class="rank-1"><td>🥇</td><td><strong>CNN+Transformer Hybrid</strong></td><td>4</td><td>Hybrid</td><td class="best">37.25%</td><td>35.87%</td><td>446.1K</td><td>83.5%/M</td></tr>
+  <tr><td>🥈</td><td>GRU-row</td><td>5</td><td>RNN</td><td>36.57%</td><td>35.68%</td><td>1.8M</td><td>20.3%/M</td></tr>
+  <tr><td>🥉</td><td><strong>SimpleCNN</strong></td><td>1</td><td>CNN</td><td>35.88%</td><td>34.48%</td><td>346.6K</td><td>103.5%/M <span class="best">★</span></td></tr>
+  <tr><td>4</td><td>GRU-patch4</td><td>5</td><td>RNN</td><td>35.64%</td><td>34.99%</td><td>1.7M</td><td>21.0%/M</td></tr>
+  <tr><td>5</td><td>CustomViT (Tự xây)</td><td>3</td><td>Transformer</td><td>34.56%</td><td>33.11%</td><td>819.4K</td><td>42.2%/M</td></tr>
+  <tr><td>6</td><td>SimpleViT (PyTorch)</td><td>3</td><td>Transformer</td><td>31.92%</td><td>30.39%</td><td>821.0K</td><td>38.9%/M</td></tr>
+  <tr><td>7</td><td>LSTM-row</td><td>5</td><td>RNN</td><td>29.36%</td><td>28.34%</td><td>2.4M</td><td>12.2%/M</td></tr>
+  <tr><td>8</td><td>LSTM-patch4</td><td>5</td><td>RNN</td><td>27.73%</td><td>26.41%</td><td>2.3M</td><td>12.1%/M</td></tr>
+  <tr><td>9</td><td>SimpleViT (Phần 1)</td><td>1</td><td>Transformer</td><td>24.47%</td><td>22.35%</td><td>821.0K</td><td>29.8%/M</td></tr>
+  <tr><td>10</td><td>MLP</td><td>1</td><td>FC</td><td>20.63%</td><td>18.31%</td><td>1.7M</td><td>12.1%/M</td></tr>
+  <tr><td>11</td><td>ChannelToken ViT</td><td>4</td><td>Transformer</td><td>17.56%</td><td>15.29%</td><td>549.5K</td><td>32.0%/M</td></tr>
+  <tr><td>12</td><td>SpatialToken ViT</td><td>4</td><td>Transformer</td><td>13.10%</td><td>9.86%</td><td>172.4K</td><td>76.0%/M</td></tr>
+  <tr><td>13</td><td>SoftmaxRegression</td><td>1</td><td>Linear</td><td class="worst">7.94%</td><td class="worst">6.09%</td><td>307.3K</td><td>25.8%/M</td></tr>
 </table>
+</div>
+<p style="font-size:0.82rem;color:var(--text-muted);">★ Acc/Param = Test Accuracy / (Params in millions) — đo lường hiệu quả sử dụng tham số. SimpleCNN đạt hiệu quả cao nhất trong các mô hình học được tốt.</p>
 
 <h2>7.2 Phân tích theo nhóm kiến trúc</h2>
-<p><strong>CNN-based:</strong> SimpleCNN (35.88%) với chỉ 346.6K params — <strong>hiệu quả nhất về params/accuracy</strong>. CNN+Transformer (37.25%) thêm global attention → cải thiện thêm ~1.4%.</p>
-<p><strong>Transformer-based:</strong> ViT cần nhiều epochs hơn (Part 3 dùng nhiều hơn Part 1 → 31.92% vs 24.47%). Custom và PyTorch ViT đạt kết quả tương đương (xác nhận hiện thực đúng). SpatialToken ViT thất bại hoàn toàn — raw pixels là feature quá thô.</p>
-<p><strong>RNN-based:</strong> GRU (~36%) bất ngờ cạnh tranh với CNN. LSTM (~28-29%) kém GRU — nhiều params hơn nhưng không hiệu quả hơn. Cả hai đều kém CNN trong bài toán ảnh vì thiếu 2D spatial awareness.</p>
-<p><strong>Linear/Fully Connected:</strong> Softmax (7.94%) và MLP (20.63%) — giới hạn rõ ràng của kiến trúc không có spatial bias.</p>
 
-<hr>
+<div class="analysis">
+  <h4>CNN-based (346K – 446K params)</h4>
+  <ul>
+    <li>SimpleCNN: <strong>hiệu quả tham số tốt nhất</strong> (103.5%/M) — inductive bias phù hợp với ảnh</li>
+    <li>CNN+Transformer: cải thiện thêm 1.37% bằng cách thêm global attention — chi phí +99.5K params</li>
+    <li>Kết luận: <em>CNNs vẫn là lựa chọn tốt nhất cho ảnh nhỏ (32×32) train from scratch</em></li>
+  </ul>
+</div>
 
-<!-- SECTION 8: CONCLUSIONS -->
-<h1>8. Kết luận</h1>
+<div class="analysis">
+  <h4>Transformer-based (172K – 821K params)</h4>
+  <ul>
+    <li>CustomViT ≈ PyTorch ViT: xác nhận hiện thực Custom encoder đúng về toán học</li>
+    <li>ViT Phần 1 vs Phần 3 (24.47% vs 31.92%): chỉ khác nhau ở số epochs → ViT cần train dài hơn</li>
+    <li>SpatialToken ViT: thất bại hoàn toàn → raw pixel tokens quá thô</li>
+    <li>Kết luận: <em>ViT cần (1) pre-training hoặc (2) rất nhiều data để thắng CNN from scratch</em></li>
+  </ul>
+</div>
 
-<h2>8.1 Bài học chính</h2>
-<ol>
-  <li><strong>Inductive bias quan trọng hơn model size:</strong> SimpleCNN (346.6K params) vượt MLP (1.7M) và LSTM (2.4M) — đơn giản vì spatial locality phù hợp với cấu trúc ảnh.</li>
-  <li><strong>ViT cần data lớn:</strong> Với 45K train samples, ViT từ scratch (~24-34%) thua CNN (~36%). ViT thực sự mạnh khi được pretrain trên hàng triệu ảnh.</li>
-  <li><strong>Hybrid thắng tất cả:</strong> CNN+Transformer kết hợp được cả hai thế mạnh — CNN xử lý local features, Transformer xử lý global relationships.</li>
-  <li><strong>Token quality quan trọng hơn token quantity:</strong> SpatialToken ViT (1024 raw pixel tokens) tệ hơn CNN features (64 tokens) — dù nhiều tokens hơn 16×, nhưng mỗi token kém chất lượng hơn.</li>
-  <li><strong>Custom Transformer = PyTorch Transformer:</strong> Custom ViT đạt kết quả tương đương (34.56% vs 31.92%), xác nhận hiểu đúng về cơ chế attention.</li>
-  <li><strong>GRU ≥ LSTM với chuỗi ngắn:</strong> GRU đơn giản hơn (ít params, train nhanh hơn) nhưng kết quả tốt hơn LSTM. Ưu thế của LSTM rõ hơn ở chuỗi rất dài (&gt;1000 steps).</li>
+<div class="analysis">
+  <h4>RNN-based (1.7M – 2.4M params)</h4>
+  <ul>
+    <li>GRU vượt LSTM +7%: ít params hơn → ít overfitting hơn với chuỗi ngắn (T=32-64)</li>
+    <li>GRU-row (36.57%) gần bằng SimpleCNN (35.88%) nhưng cần 5× nhiều params hơn</li>
+    <li>Kết luận: <em>RNN không phù hợp tự nhiên với ảnh — có thể học được nhưng kém hiệu quả params</em></li>
+  </ul>
+</div>
+
+<div class="analysis">
+  <h4>Linear/FC-based (307K – 1.7M params)</h4>
+  <ul>
+    <li>Softmax (7.94%): chứng minh rõ ràng giới hạn của mô hình tuyến tính với 100 lớp</li>
+    <li>MLP (20.63%) với 1.7M params thua SimpleCNN với 346.6K: spatial structure rất quan trọng</li>
+    <li>Kết luận: <em>Fully-connected layers không phù hợp với dữ liệu có cấu trúc không gian</em></li>
+  </ul>
+</div>
+
+<!-- ════════════════ CONCLUSION ════════════════ -->
+<h1 class="section" id="conclusion">8. Kết luận</h1>
+
+<h2>8.1 Bài học khoa học chính</h2>
+<ol style="margin-left:1.5rem; line-height:2.2">
+  <li><strong>Inductive bias phù hợp quan trọng hơn model size:</strong> SimpleCNN (346.6K) vượt MLP (1.7M), LSTM (2.4M) — CNN được thiết kế với tích chập cục bộ phù hợp cấu trúc 2D của ảnh.</li>
+  <li><strong>ViT cần data lớn để hội tụ tốt:</strong> Với 45K mẫu, ViT from scratch đạt 24–34% trong khi CNN đạt 36–37%. ViT thực sự vượt CNN khi được pretrain trên ImageNet-21K (14M ảnh).</li>
+  <li><strong>Hybrid thắng tất cả:</strong> CNN+Transformer kết hợp được inductive bias cục bộ (CNN) và khả năng học global dependencies (Transformer) — tốt nhất cả hai thế giới.</li>
+  <li><strong>Token quality quyết định hiệu năng Transformer:</strong> SpatialToken ViT (1024 raw pixel tokens, 13.10%) thua xa CNN+Transformer (64 CNN feature tokens, 37.25%). 16× nhiều tokens nhưng kết quả tệ hơn 2.8×.</li>
+  <li><strong>Custom Transformer = PyTorch Transformer:</strong> Hai đường training curve gần giống nhau, accuracy tương đương — xác nhận hiểu đúng cơ chế Multi-Head Self-Attention.</li>
+  <li><strong>GRU ≥ LSTM cho chuỗi ngắn:</strong> LSTM ưu thế ở T&gt;1000, với T=32–64, GRU ít overfitting hơn và học hiệu quả hơn. Khoảng cách ~7% là đáng kể.</li>
 </ol>
 
-<h2>8.2 Hướng cải thiện</h2>
+<h2>8.2 Hướng cải thiện tiếp theo</h2>
 <ul>
-  <li><strong>Data augmentation mạnh hơn:</strong> CutMix, MixUp, AutoAugment</li>
-  <li><strong>Learning rate warmup cho ViT:</strong> Giúp Transformer ổn định hơn giai đoạn đầu</li>
-  <li><strong>Pretrained features:</strong> Dùng CLIP/DINO features → LSTM/ViT sẽ tốt hơn nhiều</li>
-  <li><strong>Deeper models:</strong> Thêm layers CNN/Transformer với regularization tốt hơn</li>
+  <li><strong>Data augmentation mạnh hơn:</strong> CutMix, MixUp, RandAugment → có thể cải thiện 5–10%</li>
+  <li><strong>LR warmup cho ViT:</strong> Linear warmup 10 epochs trước CosineAnnealing → ViT ổn định hơn giai đoạn đầu</li>
+  <li><strong>Deeper CNN backbone:</strong> ResNet-like residual connections → target &gt;50% với CNN</li>
+  <li><strong>Pre-trained token extractor:</strong> Dùng CLIP/DINO features → LSTM/ViT có token chất lượng cao hơn nhiều</li>
+  <li><strong>Label smoothing (ε=0.1):</strong> Regularize CrossEntropyLoss cho bài toán 100 lớp</li>
 </ul>
 
 <hr>
 
 <!-- REFERENCES -->
-<h1>Tài liệu tham khảo</h1>
-<ol>
-  <li>Dosovitskiy, A. et al. (2021). <em>An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</em>. ICLR 2021.</li>
-  <li>He, K. et al. (2016). <em>Deep Residual Learning for Image Recognition</em>. CVPR 2016.</li>
+<h1 class="section" id="refs">Tài liệu tham khảo</h1>
+<ol style="margin-left:1.5rem; line-height:2.1; font-size:0.93rem;">
+  <li>Dosovitskiy, A. et al. (2021). <em>An Image is Worth 16×16 Words: Transformers for Image Recognition at Scale</em>. ICLR 2021.</li>
   <li>Vaswani, A. et al. (2017). <em>Attention Is All You Need</em>. NeurIPS 2017.</li>
-  <li>Cho, K. et al. (2014). <em>Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation</em>. EMNLP 2014.</li>
+  <li>He, K. et al. (2016). <em>Deep Residual Learning for Image Recognition</em>. CVPR 2016.</li>
+  <li>Cho, K. et al. (2014). <em>Learning Phrase Representations using RNN Encoder-Decoder</em>. EMNLP 2014.</li>
+  <li>Chung, J. et al. (2014). <em>Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling</em>. arXiv 2014.</li>
   <li>Krizhevsky, A. (2009). <em>Learning Multiple Layers of Features from Tiny Images</em>. Technical Report, University of Toronto.</li>
+  <li>Touvron, H. et al. (2021). <em>Training data-efficient image transformers &amp; distillation through attention</em>. ICML 2021. (DeiT)</li>
 </ol>
 
 <div class="footer">
-  <p>Báo cáo được tạo ngày 28/03/2026 &nbsp;|&nbsp; CO5085 – Deep Learning &amp; Ứng dụng trong Thị giác Máy tính &nbsp;|&nbsp; HCMUT</p>
+  <p>Báo cáo — CO5085 Deep Learning | Nguyễn Trung Phong – MSSV: 2570047 | HCMUT, 28/03/2026</p>
 </div>
 
 </body>

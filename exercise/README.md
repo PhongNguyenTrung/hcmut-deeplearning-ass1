@@ -1,5 +1,4 @@
-# Exercise — Phân loại ảnh với các mô hình
-học sâu cơ bản trên CIFAR-100
+# Exercise — Phân loại ảnh với các mô hình học sâu cơ bản trên CIFAR-100
 
 **Môn:** CO5085 – Deep Learning & Ứng dụng trong Thị giác Máy tính
 **Trường:** ĐH Bách Khoa TP.HCM (HCMUT)
