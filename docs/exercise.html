@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bài Tập 2 – Phân loại Ảnh từ Scratch | CO5085</title>
+  <title>Bài Tập 2 – Phân loại ảnh với các mô hình
+học sâu cơ bản | CO5085</title>
   <meta name="description" content="Bài tập 2: Softmax, MLP, CNN, ViT tự xây, LSTM/GRU trên CIFAR-100 – CO5085 Deep Learning HCMUT">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -127,10 +128,9 @@
 
   <div class="hero">
     <div class="badge">Bài Tập 2 · CO5085 · 2025–2026 HK2</div>
-    <h1>Phân loại Ảnh từ Scratch:<br>Softmax → CNN → ViT → LSTM</h1>
+    <h1>Phân loại ảnh với các mô hình học sâu cơ bản</h1>
     <p>
-      Xây dựng và so sánh <strong>12 kiến trúc phân loại ảnh</strong> trên CIFAR-100 từ đơn giản đến phức tạp —
-      không dùng pretrained weights, tự viết training loop.
+      Xây dựng và so sánh <strong>các mô hình phân loại ảnh</strong> trên CIFAR-100 từ đơn giản đến phức tạp.
     </p>
   </div>
 
@@ -140,22 +140,12 @@
       <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/tree/main/exercise" class="link-card">
         <div class="icon">💻</div>
         <div class="title">Source Code</div>
-        <div class="desc">Thư mục exercise/ trên GitHub</div>
+        <div class="desc">Thư mục chứa mã nguồn bài tập</div>
       </a>
-      <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/tree/main/exercise/notebooks" class="link-card">
-        <div class="icon">📓</div>
-        <div class="title">Notebooks</div>
-        <div class="desc">5 Jupyter notebooks có giải thích chi tiết</div>
-      </a>
-      <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/blob/main/exercise/README.md" class="link-card">
-        <div class="icon">📖</div>
-        <div class="title">README</div>
-        <div class="desc">Hướng dẫn cài đặt và chạy</div>
-      </a>
-      <a href="index.html" class="link-card">
-        <div class="icon">🏠</div>
-        <div class="title">Trang Chủ</div>
-        <div class="desc">Tất cả bài tập lớn CO5085</div>
+      <a href="report.pdf" class="link-card" id="slide-link">
+        <div class="icon">📊</div>
+        <div class="title">Report PDF</div>
+        <div class="desc">Tổng hợp báo cáo kết quả Phân loại ảnh với các mô hình học sâu cơ bản</div>
       </a>
     </div>
   </div>
@@ -280,7 +270,7 @@
   <!-- Kết quả -->
   <div class="section" id="results">
     <h2>📊 Kết Quả Thực Nghiệm</h2>
-    <div class="sub">CIFAR-100 · Train từ đầu · Không pretrained · Thiết bị: MPS (Apple M-series) / CUDA</div>
+    <div class="sub">Cập nhật: 28/03/2026 · Train từ đầu trên CIFAR-100 · Không dùng pretrained weights</div>
 
     <div class="table-title">Phần 1 & 2 — 4 mô hình cơ bản</div>
     <div class="table-wrap">
@@ -289,10 +279,10 @@
           <tr><th>Mô hình</th><th>Kiến trúc</th><th>Test Acc</th><th>Val Acc</th><th>F1-macro</th><th>Params</th></tr>
         </thead>
         <tbody>
-          <tr><td>SoftmaxRegression</td><td>Linear</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>307K</td></tr>
-          <tr><td>MLP</td><td>Fully Connected</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>1.7M</td></tr>
-          <tr><td>SimpleCNN</td><td>Convolutional</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>347K</td></tr>
-          <tr><td>SimpleViT</td><td>Transformer (PyTorch)</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>821K</td></tr>
+          <tr><td>SoftmaxRegression</td><td>Linear</td><td class="metric">7.94%</td><td>8.34%</td><td>6.09%</td><td>307.3K</td></tr>
+          <tr><td>MLP</td><td>Fully Connected</td><td class="metric">20.63%</td><td>20.68%</td><td>18.31%</td><td>1.7M</td></tr>
+          <tr><td>SimpleCNN</td><td>Convolutional</td><td class="metric">35.88%</td><td>36.38%</td><td>34.48%</td><td>346.6K</td></tr>
+          <tr><td>SimpleViT</td><td>Transformer (PyTorch)</td><td class="metric">24.47%</td><td>25.54%</td><td>22.35%</td><td>821.0K</td></tr>
         </tbody>
       </table>
     </div>
@@ -304,8 +294,8 @@
           <tr><th>Mô hình</th><th>Encoder</th><th>Test Acc</th><th>Val Acc</th><th>F1-macro</th><th>Params</th></tr>
         </thead>
         <tbody>
-          <tr><td>SimpleViT</td><td>nn.TransformerEncoder</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>821K</td></tr>
-          <tr><td>CustomViT</td><td>Custom (einsum)</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td class="tbd">TBD</td><td>819K</td></tr>
+          <tr><td>SimpleViT</td><td>nn.TransformerEncoder</td><td class="metric">31.92%</td><td>33.00%</td><td>30.39%</td><td>821.0K</td></tr>
+          <tr><td>CustomViT</td><td>Custom (einsum)</td><td class="metric">34.56%</td><td>35.80%</td><td>33.11%</td><td>819.4K</td></tr>
         </tbody>
       </table>
     </div>
@@ -314,12 +304,12 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Mô hình</th><th>Cách Tokenize</th><th>Seq Len</th><th>Test Acc</th><th>Params</th></tr>
+          <tr><th>Mô hình</th><th>Cách Tokenize</th><th>Seq Len</th><th>Test Acc</th><th>F1-macro</th><th>Params</th></tr>
         </thead>
         <tbody>
-          <tr><td>CNN+Transformer</td><td>CNN feature positions</td><td>64</td><td class="tbd">TBD</td><td>446K</td></tr>
-          <tr><td>SpatialToken ViT</td><td>H×W pixel positions</td><td>1024</td><td class="tbd">TBD</td><td>172K</td></tr>
-          <tr><td>ChannelToken ViT</td><td>C channels</td><td>64</td><td class="tbd">TBD</td><td>550K</td></tr>
+          <tr><td>CNN+Transformer</td><td>CNN feature positions</td><td>64</td><td class="metric">37.25%</td><td>35.87%</td><td>446.1K</td></tr>
+          <tr><td>SpatialToken ViT</td><td>H×W pixel positions</td><td>1024</td><td class="metric">13.10%</td><td>9.86%</td><td>172.4K</td></tr>
+          <tr><td>ChannelToken ViT</td><td>C channels</td><td>64</td><td class="metric">17.56%</td><td>15.29%</td><td>549.5K</td></tr>
         </tbody>
       </table>
     </div>
@@ -328,20 +318,40 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Mô hình</th><th>Seq Mode</th><th>T (steps)</th><th>D (features)</th><th>Test Acc</th><th>Params</th></tr>
+          <tr><th>Mô hình</th><th>Seq Mode</th><th>T (steps)</th><th>D (features)</th><th>Test Acc</th><th>F1-macro</th><th>Params</th></tr>
         </thead>
         <tbody>
-          <tr><td>LSTM (Bidirectional)</td><td>Row-wise</td><td>32</td><td>96</td><td class="tbd">TBD</td><td>~1.3M</td></tr>
-          <tr><td>LSTM (Bidirectional)</td><td>Patch 4×4</td><td>64</td><td>48</td><td class="tbd">TBD</td><td>~1.1M</td></tr>
-          <tr><td>GRU (Bidirectional)</td><td>Row-wise</td><td>32</td><td>96</td><td class="tbd">TBD</td><td>~1.0M</td></tr>
-          <tr><td>GRU (Bidirectional)</td><td>Patch 4×4</td><td>64</td><td>48</td><td class="tbd">TBD</td><td>~830K</td></tr>
+          <tr><td>LSTM (Bidirectional)</td><td>Row-wise</td><td>32</td><td>96</td><td class="metric">29.36%</td><td>28.34%</td><td>2.4M</td></tr>
+          <tr><td>LSTM (Bidirectional)</td><td>Patch 4×4</td><td>64</td><td>48</td><td class="metric">27.73%</td><td>26.41%</td><td>2.3M</td></tr>
+          <tr><td>GRU (Bidirectional)</td><td>Row-wise</td><td>32</td><td>96</td><td class="metric">36.57%</td><td>35.68%</td><td>1.8M</td></tr>
+          <tr><td>GRU (Bidirectional)</td><td>Patch 4×4</td><td>64</td><td>48</td><td class="metric">35.64%</td><td>34.99%</td><td>1.7M</td></tr>
         </tbody>
       </table>
     </div>
 
-    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 1rem;">
-      ⏳ Kết quả sẽ được cập nhật sau khi hoàn thành training. Bảng TBD sẽ được điền với giá trị thực tế.
-    </p>
+    <div class="table-title">Grand Summary — Tất cả mô hình (xếp theo Test Accuracy)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Hạng</th><th>Mô hình</th><th>Phần</th><th>Test Acc</th><th>F1-macro</th><th>Params</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>🥇</td><td>CNN+Transformer Hybrid</td><td>4</td><td class="metric">37.25%</td><td>35.87%</td><td>446.1K</td></tr>
+          <tr><td>🥈</td><td>SimpleCNN</td><td>1</td><td class="metric">35.88%</td><td>34.48%</td><td>346.6K</td></tr>
+          <tr><td>🥉</td><td>GRU-row</td><td>5</td><td class="metric">36.57%</td><td>35.68%</td><td>1.8M</td></tr>
+          <tr><td>4</td><td>GRU-patch4</td><td>5</td><td class="metric">35.64%</td><td>34.99%</td><td>1.7M</td></tr>
+          <tr><td>5</td><td>CustomViT (Tự xây)</td><td>3</td><td class="metric">34.56%</td><td>33.11%</td><td>819.4K</td></tr>
+          <tr><td>6</td><td>SimpleViT (PyTorch)</td><td>3</td><td class="metric">31.92%</td><td>30.39%</td><td>821.0K</td></tr>
+          <tr><td>7</td><td>LSTM-row</td><td>5</td><td class="metric">29.36%</td><td>28.34%</td><td>2.4M</td></tr>
+          <tr><td>8</td><td>LSTM-patch4</td><td>5</td><td class="metric">27.73%</td><td>26.41%</td><td>2.3M</td></tr>
+          <tr><td>9</td><td>SimpleViT (Phần 1)</td><td>1</td><td class="metric">24.47%</td><td>22.35%</td><td>821.0K</td></tr>
+          <tr><td>10</td><td>MLP</td><td>1</td><td class="metric">20.63%</td><td>18.31%</td><td>1.7M</td></tr>
+          <tr><td>11</td><td>ChannelToken ViT</td><td>4</td><td class="metric">17.56%</td><td>15.29%</td><td>549.5K</td></tr>
+          <tr><td>12</td><td>SpatialToken ViT</td><td>4</td><td class="metric">13.10%</td><td>9.86%</td><td>172.4K</td></tr>
+          <tr><td>13</td><td>SoftmaxRegression</td><td>1</td><td class="metric">7.94%</td><td>6.09%</td><td>307.3K</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <footer>
