@@ -337,19 +337,19 @@ Head: LN → CLS[:,0] → Linear(128,100)</pre>
 
 <div class="fig-grid col-2">
   <figure>
-    <img src="exercise_plots/softmax_curves.png" alt="Softmax training curves">
+    <img src="../results/plots/softmax_curves.png" alt="Softmax training curves">
     <figcaption><strong>Hình 1a.</strong> Softmax Regression — Loss &amp; Accuracy qua 30 epochs</figcaption>
   </figure>
   <figure>
-    <img src="exercise_plots/mlp_curves.png" alt="MLP training curves">
+    <img src="../results/plots/mlp_curves.png" alt="MLP training curves">
     <figcaption><strong>Hình 1b.</strong> MLP — Loss &amp; Accuracy qua 50 epochs</figcaption>
   </figure>
   <figure>
-    <img src="exercise_plots/cnn_curves.png" alt="CNN training curves">
+    <img src="../results/plots/cnn_curves.png" alt="CNN training curves">
     <figcaption><strong>Hình 1c.</strong> SimpleCNN — Loss &amp; Accuracy qua 50 epochs</figcaption>
   </figure>
   <figure>
-    <img src="exercise_plots/vit_curves.png" alt="ViT training curves">
+    <img src="../results/plots/vit_curves.png" alt="ViT training curves">
     <figcaption><strong>Hình 1d.</strong> SimpleViT — Loss &amp; Accuracy qua 100 epochs</figcaption>
   </figure>
 </div>
@@ -367,7 +367,7 @@ Head: LN → CLS[:,0] → Linear(128,100)</pre>
 <h2>3.4 So sánh kết quả Phần 1+2</h2>
 
 <figure>
-  <img src="exercise_plots/part1_2_bar.png" alt="Part 1+2 bar chart comparison">
+  <img src="../results/plots/part1_2_bar.png" alt="Part 1+2 bar chart comparison">
   <figcaption><strong>Hình 2.</strong> So sánh Test Accuracy của 4 mô hình Phần 1+2. SimpleCNN dẫn đầu với 35.88%, gấp hơn 4× so với Softmax Regression.</figcaption>
 </figure>
 
@@ -431,12 +431,12 @@ Head: LN → CLS[:,0] → Linear(128,100)</pre>
 <h2>4.4 Training curves — Phần 3</h2>
 
 <figure>
-  <img src="exercise_plots/part3_comparison_curves.png" alt="Part 3 training curves">
+  <img src="../results/plots/part3_comparison_curves.png" alt="Part 3 training curves">
   <figcaption><strong>Hình 3.</strong> Training curves của SimpleViT (PyTorch) và CustomViT (tự xây) — cùng cấu hình, cùng số epochs. Hai đường curve có dạng tương tự xác nhận hiện thực Custom encoder là đúng.</figcaption>
 </figure>
 
 <figure>
-  <img src="exercise_plots/part3_bar.png" alt="Part 3 bar chart">
+  <img src="../results/plots/part3_bar.png" alt="Part 3 bar chart">
   <figcaption><strong>Hình 4.</strong> So sánh Test Accuracy Phần 3. CustomViT (34.56%) vượt PyTorch ViT (31.92%) — chênh lệch ~2.6% do khởi tạo ngẫu nhiên, không phải lỗi hiện thực.</figcaption>
 </figure>
 
@@ -495,12 +495,12 @@ Head: LN → CLS[:,0] → Linear(128,100)</pre>
 <h2>5.3 Training curves — Phần 4</h2>
 
 <figure>
-  <img src="exercise_plots/part4_comparison_curves.png" alt="Part 4 training curves">
+  <img src="../results/plots/part4_comparison_curves.png" alt="Part 4 training curves">
   <figcaption><strong>Hình 5.</strong> Training curves của 3 kiến trúc Phần 4. CNNTransformer hội tụ tốt và ổn định. SpatialToken ViT và ChannelToken ViT bị plateau sớm ở mức rất thấp — dấu hiệu token quality kém.</figcaption>
 </figure>
 
 <figure>
-  <img src="exercise_plots/part4_bar.png" alt="Part 4 bar chart">
+  <img src="../results/plots/part4_bar.png" alt="Part 4 bar chart">
   <figcaption><strong>Hình 6.</strong> So sánh Test Accuracy Phần 4. Khoảng cách rất lớn giữa CNN+Transformer (37.25%) và hai mô hình còn lại chứng minh tầm quan trọng của chất lượng token.</figcaption>
 </figure>
 
@@ -561,12 +561,12 @@ Head: LN → CLS[:,0] → Linear(128,100)</pre>
 <h2>6.3 Training curves — Phần 5</h2>
 
 <figure>
-  <img src="exercise_plots/part5_comparison_curves.png" alt="Part 5 training curves">
+  <img src="../results/plots/part5_comparison_curves.png" alt="Part 5 training curves">
   <figcaption><strong>Hình 7.</strong> Training curves của 4 cấu hình LSTM/GRU. GRU (cả row và patch4) hội tụ nhanh hơn và đạt val accuracy cao hơn LSTM đáng kể. LSTM-patch4 hội tụ chậm nhất — nhiều params nhất nhưng kết quả tệ nhất trong nhóm.</figcaption>
 </figure>
 
 <figure>
-  <img src="exercise_plots/part5_bar.png" alt="Part 5 bar chart">
+  <img src="../results/plots/part5_bar.png" alt="Part 5 bar chart">
   <figcaption><strong>Hình 8.</strong> So sánh Test Accuracy Phần 5. GRU (cả 2 configs) vượt hẳn LSTM. GRU-row đạt 36.57% — gần bằng SimpleCNN!</figcaption>
 </figure>
 
