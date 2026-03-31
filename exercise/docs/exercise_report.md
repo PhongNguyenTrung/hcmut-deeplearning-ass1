@@ -15,7 +15,7 @@
 
 ## Mục lục
 
-1. [Tóm tắt](#1-tóm-tắt)
+1. [Giới thiệu bài toán phân loại ảnh](#1-giới-thiệu-bài-toán-phân-loại-ảnh)
 2. [Tập dữ liệu](#2-tập-dữ-liệu)
 3. [Phần 1 — Xây dựng 4 mô hình phân loại](#3-phần-1--xây-dựng-4-mô-hình-phân-loại)
 4. [Phần 2 — Huấn luyện, đánh giá và so sánh](#4-phần-2--huấn-luyện-đánh-giá-và-so-sánh)
@@ -28,20 +28,55 @@
 
 ---
 
-## 1. Tóm tắt
+## 1. Giới thiệu bài toán phân loại ảnh
 
-Báo cáo trình bày quá trình xây dựng và so sánh **12 kiến trúc mạng nơ-ron** cho bài toán phân loại ảnh trên **CIFAR-100**. Toàn bộ mô hình được huấn luyện **from scratch** — không dùng pretrained weights — với training loop tự viết bằng PyTorch, thực nghiệm trên Apple M-series (MPS).
+### 1.1 Phân loại ảnh là gì?
 
-**Kết quả chính:**
+**Phân loại ảnh** (Image Classification) là bài toán gán nhãn cho một ảnh đầu vào — trả lời câu hỏi *"ảnh này thuộc lớp nào?"*. Đây là một trong những bài toán nền tảng và quan trọng nhất của Thị giác Máy tính (Computer Vision).
 
-| Hạng | Mô hình | Phần | Test Accuracy |
-|------|---------|------|---------------|
-| 🥇 | CNN+Transformer Hybrid | 4 | **37.25%** |
-| 🥈 | GRU-row | 5 | 36.57% |
-| 🥉 | SimpleCNN | 1 | 35.88% |
-| — | SoftmaxRegression | 1 | 7.94% (thấp nhất) |
+```
+Đầu vào: ảnh [H × W × C]  →  Mô hình  →  Đầu ra: nhãn lớp (ví dụ: "mèo", "xe hơi")
+```
 
-**Phát hiện nổi bật:** (1) SimpleCNN (346.6K params) vượt MLP (1.7M params) — inductive bias phù hợp quan trọng hơn model size; (2) Custom TransformerEncoder tự xây đạt kết quả tương đương PyTorch built-in (34.56% vs 31.92%), xác nhận hiện thực đúng về toán học; (3) SpatialToken ViT dùng raw pixel tokens thất bại hoàn toàn (13.10%) — minh chứng trực quan tại sao ViT gốc dùng patches thay vì pixels.
+Ứng dụng thực tế: nhận dạng khuôn mặt, chẩn đoán hình ảnh y tế, phân loại sản phẩm lỗi trong sản xuất, hệ thống xe tự lái nhận diện biển báo giao thông.
+
+### 1.2 Thách thức của bài toán
+
+Phân loại ảnh khó vì nhiều lý do:
+
+- **Biến đổi ánh sáng:** Cùng một vật thể nhưng ánh sáng khác nhau cho pixel hoàn toàn khác nhau
+- **Biến đổi góc nhìn:** Cùng một con mèo nhìn từ trước, từ bên, từ trên cho ảnh rất khác nhau
+- **Intra-class variation:** Các con chó thuộc cùng một lớp nhưng hình dạng, màu sắc rất đa dạng
+- **Inter-class similarity:** Báo và hổ thuộc 2 lớp khác nhau nhưng trông rất giống nhau
+- **Occlusion:** Vật thể bị che khuất một phần
+- **Curse of dimensionality:** Ảnh 32×32×3 có 3,072 chiều — không gian quá lớn cho phương pháp truyền thống
+
+### 1.3 Sự phát triển của các phương pháp
+
+Lịch sử giải quyết bài toán phân loại ảnh phản ánh chính sự tiến hoá của học sâu:
+
+| Giai đoạn | Phương pháp | Đặc điểm |
+|-----------|-------------|----------|
+| Trước 2012 | HOG, SIFT + SVM | Feature thủ công, không học được |
+| 2012 | AlexNet (CNN) | Feature tự học qua tích chập — bước ngoặt lớn |
+| 2014–2019 | VGGNet, ResNet, EfficientNet | CNN ngày càng sâu hơn, chính xác hơn |
+| 2020–nay | Vision Transformer (ViT) | Áp dụng cơ chế Attention từ NLP vào ảnh |
+| Hiện tại | Hybrid CNN+Transformer | Kết hợp ưu điểm cả hai |
+
+### 1.4 Mục tiêu bài tập này
+
+Bài tập này xây dựng và so sánh **12 kiến trúc** đại diện cho toàn bộ lịch sử trên — từ mô hình tuyến tính đơn giản nhất đến Hybrid hiện đại:
+
+| Phần | Kiến trúc | Đại diện cho |
+|------|-----------|-------------|
+| Phần 1 | Softmax Regression, MLP | Phương pháp tuyến tính / fully-connected |
+| Phần 1 | SimpleCNN, SimpleViT | CNN cổ điển / Transformer hiện đại |
+| Phần 2 | Training loop tự viết | Hiểu cơ chế tối ưu hoá |
+| Phần 3 | CustomViT (einsum) | Hiểu cơ chế Attention từ gốc |
+| Phần 4 | CNN+Transformer, Spatial/Channel tokens | Kiến trúc hybrid, tokenization |
+| Phần 5 | LSTM, GRU | RNN — phương pháp chuỗi |
+
+Tất cả mô hình được huấn luyện **from scratch** trên **CIFAR-100** (100 lớp, 32×32 pixels) — không dùng pretrained weights — với training loop tự viết bằng PyTorch.
 
 ---
 
