@@ -102,7 +102,7 @@ def train(
       - Mixed-precision (AMP)
       - Early stopping
       - Best-model checkpointing
-    
+
     Returns history dict: {train_loss, val_loss, train_acc, val_acc}
     """
     model = model.to(device)
@@ -127,7 +127,7 @@ def train(
     for epoch in range(1, num_epochs + 1):
         t0 = time.time()
         train_loss, train_acc = train_one_epoch(model, train_loader, optimizer, criterion, device, scaler)
-        val_loss,   val_acc   = evaluate(model, val_loader, criterion, device)
+        val_loss, val_acc = evaluate(model, val_loader, criterion, device)
 
         if scheduler_type == "cosine":
             scheduler.step()

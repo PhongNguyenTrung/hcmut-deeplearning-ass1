@@ -8,7 +8,6 @@ Hai mô hình chính:
 Cả hai đều dùng pretrained weights trên COCO, sau đó fine-tune trên Pascal VOC 2012.
 """
 
-import torch
 import torch.nn as nn
 
 from .data import NUM_CLASSES
