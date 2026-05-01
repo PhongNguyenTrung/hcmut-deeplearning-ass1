@@ -5,7 +5,6 @@ Faster R-CNN: SGD + momentum + StepLR (chuẩn theo paper gốc)
 YOLOv8: thin wrapper around ultralytics API (ultralytics tự xử lý toàn bộ)
 """
 
-import os
 import time
 from pathlib import Path
 
@@ -89,7 +88,7 @@ def train_one_epoch_frcnn(
                 loss_components[k] += loss_dict[k].item()
 
         if (i + 1) % print_freq == 0 or (i + 1) == n_batches:
-            print(f"  Batch [{i+1}/{n_batches}] loss={batch_loss:.4f}")
+            print(f"  Batch [{i + 1}/{n_batches}] loss={batch_loss:.4f}")
 
     n = max(n_batches, 1)
     return {

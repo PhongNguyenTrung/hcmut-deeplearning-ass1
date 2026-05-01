@@ -52,7 +52,7 @@ def get_predictions(model, loader, device):
 def compute_metrics(preds, labels, class_names=None, verbose=True):
     """Compute accuracy, F1-macro, and per-class metrics."""
     acc = accuracy_score(labels, preds)
-    f1  = f1_score(labels, preds, average="macro", zero_division=0)
+    f1 = f1_score(labels, preds, average="macro", zero_division=0)
 
     results = {"accuracy": acc, "f1_macro": f1}
 
@@ -61,8 +61,8 @@ def compute_metrics(preds, labels, class_names=None, verbose=True):
         print(f"F1-Macro : {f1:.4f}")
         print("\nClassification Report:")
         print(classification_report(labels, preds,
-                                     target_names=class_names,
-                                     zero_division=0))
+                                    target_names=class_names,
+                                    zero_division=0))
     return results
 
 
@@ -71,7 +71,7 @@ def compute_metrics(preds, labels, class_names=None, verbose=True):
 # ─────────────────────────────────────────────
 
 def plot_confusion_matrix(preds, labels, class_names, save_path: str = None,
-                           figsize=(12, 10), normalize: bool = True):
+                          figsize=(12, 10), normalize: bool = True):
     """Plot and optionally save confusion matrix."""
     cm = confusion_matrix(labels, preds)
     if normalize:
@@ -98,7 +98,7 @@ def plot_confusion_matrix(preds, labels, class_names, save_path: str = None,
 
 
 def plot_training_curves(history: dict, model_name: str = "Model",
-                          save_path: str = None):
+                         save_path: str = None):
     """Plot loss and accuracy curves from training history."""
     epochs = range(1, len(history["train_loss"]) + 1)
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
@@ -111,7 +111,7 @@ def plot_training_curves(history: dict, model_name: str = "Model",
 
     # Loss
     axes[0].plot(epochs, history["train_loss"], label="Train", marker="o", markersize=4)
-    axes[0].plot(epochs, history["val_loss"],   label="Val",   marker="s", markersize=4)
+    axes[0].plot(epochs, history["val_loss"], label="Val", marker="s", markersize=4)
     annotate_points(axes[0], epochs, history["train_loss"])
     annotate_points(axes[0], epochs, history["val_loss"], offset=(0, -10))
     axes[0].set_title(f"{model_name} – Loss")
@@ -122,9 +122,9 @@ def plot_training_curves(history: dict, model_name: str = "Model",
 
     # Accuracy
     axes[1].plot(epochs, history["train_acc"], label="Train", marker="o", markersize=4)
-    axes[1].plot(epochs, history["val_acc"],   label="Val",   marker="s", markersize=4)
+    axes[1].plot(epochs, history["val_acc"], label="Val", marker="s", markersize=4)
     annotate_points(axes[1], epochs, history["train_acc"], fmt="{:.3f}")
-    annotate_points(axes[1], epochs, history["val_acc"],   fmt="{:.3f}", offset=(0, -10))
+    annotate_points(axes[1], epochs, history["val_acc"], fmt="{:.3f}", offset=(0, -10))
     axes[1].set_title(f"{model_name} – Accuracy")
     axes[1].set_xlabel("Epoch")
     axes[1].set_ylabel("Accuracy")

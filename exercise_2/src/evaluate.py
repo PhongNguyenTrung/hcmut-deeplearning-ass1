@@ -11,7 +11,6 @@ Dùng pycocotools (thư viện chuẩn cho detection evaluation).
 """
 
 import time
-from pathlib import Path
 
 import torch
 import numpy as np
@@ -63,13 +62,13 @@ def predict_frcnn(
             keep = pred["scores"] >= score_threshold
             all_preds.append({
                 "image_id": image_id,
-                "boxes":  pred["boxes"][keep].cpu().numpy().tolist(),
+                "boxes": pred["boxes"][keep].cpu().numpy().tolist(),
                 "scores": pred["scores"][keep].cpu().numpy().tolist(),
                 "labels": pred["labels"][keep].cpu().numpy().tolist(),
             })
             all_targets.append({
                 "image_id": image_id,
-                "boxes":  tgt["boxes"].cpu().numpy().tolist(),
+                "boxes": tgt["boxes"].cpu().numpy().tolist(),
                 "labels": tgt["labels"].cpu().numpy().tolist(),
             })
             image_counter += 1
@@ -119,7 +118,7 @@ def predict_yolov8(
             continue
         all_preds.append({
             "image_id": i,
-            "boxes":  boxes.xyxy.cpu().numpy().tolist(),
+            "boxes": boxes.xyxy.cpu().numpy().tolist(),
             "scores": boxes.conf.cpu().numpy().tolist(),
             # YOLO labels: 0-indexed → convert to 1-indexed để thống nhất với Faster R-CNN
             "labels": (boxes.cls.cpu().numpy().astype(int) + 1).tolist(),
@@ -209,7 +208,7 @@ def compute_map_coco(
         print("[Eval] Không có predictions nào! Kiểm tra lại model.")
         return {"mAP_50": 0.0, "mAP_50_95": 0.0, "AP_per_class": {}}
 
-    import json, io
+    import io
     coco_gt = COCO()
     coco_gt.dataset = gt_coco_dict
     coco_gt.createIndex()
