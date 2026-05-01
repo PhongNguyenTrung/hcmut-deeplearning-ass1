@@ -3,13 +3,11 @@ datasets.py – Dataset & DataLoader utilities
 CO5085 – Assignment 1
 """
 
-import os
 import torch
 from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision import datasets, transforms
 from PIL import Image
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from transformers import AutoTokenizer
 
@@ -42,7 +40,7 @@ def get_image_transforms(train: bool = True, img_size: int = 224):
 
 
 def get_cifar100_loaders(data_dir: str = "./data/image", batch_size: int = 64,
-                          num_workers: int = 2):
+                         num_workers: int = 2):
     """Download & return CIFAR-100 DataLoaders."""
     train_ds = datasets.CIFAR100(
         root=data_dir, train=True, download=True,
@@ -56,18 +54,18 @@ def get_cifar100_loaders(data_dir: str = "./data/image", batch_size: int = 64,
     val_size = int(0.2 * len(train_ds))
     train_size = len(train_ds) - val_size
     train_ds, val_ds = random_split(train_ds, [train_size, val_size],
-                                     generator=torch.Generator().manual_seed(42))
+                                    generator=torch.Generator().manual_seed(42))
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
-                               num_workers=num_workers, pin_memory=True)
-    val_loader   = DataLoader(val_ds,   batch_size=batch_size, shuffle=False,
-                               num_workers=num_workers, pin_memory=True)
-    test_loader  = DataLoader(test_ds,  batch_size=batch_size, shuffle=False,
-                               num_workers=num_workers, pin_memory=True)
+                              num_workers=num_workers, pin_memory=True)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False,
+                            num_workers=num_workers, pin_memory=True)
+    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False,
+                             num_workers=num_workers, pin_memory=True)
     return train_loader, val_loader, test_loader
 
 
 def get_food101_loaders(data_dir: str = "./data/image", batch_size: int = 32,
-                         num_workers: int = 2, img_size: int = 224):
+                        num_workers: int = 2, img_size: int = 224):
     """Download & return Food-101 DataLoaders."""
     train_ds = datasets.Food101(
         root=data_dir, split="train", download=True,
@@ -80,13 +78,13 @@ def get_food101_loaders(data_dir: str = "./data/image", batch_size: int = 32,
     val_size = int(0.15 * len(train_ds))
     train_size = len(train_ds) - val_size
     train_ds, val_ds = random_split(train_ds, [train_size, val_size],
-                                     generator=torch.Generator().manual_seed(42))
+                                    generator=torch.Generator().manual_seed(42))
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
-                               num_workers=num_workers, pin_memory=True)
-    val_loader   = DataLoader(val_ds,   batch_size=batch_size, shuffle=False,
-                               num_workers=num_workers, pin_memory=True)
-    test_loader  = DataLoader(test_ds,  batch_size=batch_size, shuffle=False,
-                               num_workers=num_workers, pin_memory=True)
+                              num_workers=num_workers, pin_memory=True)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False,
+                            num_workers=num_workers, pin_memory=True)
+    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False,
+                             num_workers=num_workers, pin_memory=True)
     return train_loader, val_loader, test_loader
 
 
@@ -115,20 +113,20 @@ class TextDataset(Dataset):
             return_tensors="pt",
         )
         return {
-            "input_ids":      encoding["input_ids"].squeeze(0),
+            "input_ids": encoding["input_ids"].squeeze(0),
             "attention_mask": encoding["attention_mask"].squeeze(0),
-            "label":          torch.tensor(self.labels[idx], dtype=torch.long),
+            "label": torch.tensor(self.labels[idx], dtype=torch.long),
         }
 
 
 def get_20newsgroups_loaders(tokenizer_name: str = "distilbert-base-uncased",
-                              batch_size: int = 32, max_length: int = 256,
-                              num_workers: int = 2):
+                             batch_size: int = 32, max_length: int = 256,
+                             num_workers: int = 2):
     """Return 20 Newsgroups DataLoaders using sklearn + HuggingFace tokenizer."""
     from sklearn.datasets import fetch_20newsgroups
 
     train_raw = fetch_20newsgroups(subset="train", remove=("headers", "footers", "quotes"))
-    test_raw  = fetch_20newsgroups(subset="test",  remove=("headers", "footers", "quotes"))
+    test_raw = fetch_20newsgroups(subset="test", remove=("headers", "footers", "quotes"))
 
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
@@ -137,13 +135,13 @@ def get_20newsgroups_loaders(tokenizer_name: str = "distilbert-base-uncased",
         train_raw.data, train_raw.target, test_size=0.15, random_state=42
     )
 
-    train_ds = TextDataset(tr_texts,         tr_labels,         tokenizer, max_length)
-    val_ds   = TextDataset(val_texts,         val_labels,         tokenizer, max_length)
-    test_ds  = TextDataset(test_raw.data, list(test_raw.target), tokenizer, max_length)
+    train_ds = TextDataset(tr_texts, tr_labels, tokenizer, max_length)
+    val_ds = TextDataset(val_texts, val_labels, tokenizer, max_length)
+    test_ds = TextDataset(test_raw.data, list(test_raw.target), tokenizer, max_length)
 
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,  num_workers=num_workers)
-    val_loader   = DataLoader(val_ds,   batch_size=batch_size, shuffle=False, num_workers=num_workers)
-    test_loader  = DataLoader(test_ds,  batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
     return train_loader, val_loader, test_loader, tokenizer, 20
 
@@ -186,8 +184,8 @@ class Flickr30kDataset(Dataset):
 
         if self.tokenizer is not None:
             enc = self.tokenizer(caption, padding="max_length", truncation=True,
-                                  max_length=self.max_length, return_tensors="pt")
-            result["input_ids"]      = enc["input_ids"].squeeze(0)
+                                 max_length=self.max_length, return_tensors="pt")
+            result["input_ids"] = enc["input_ids"].squeeze(0)
             result["attention_mask"] = enc["attention_mask"].squeeze(0)
 
         return result
