@@ -5,7 +5,9 @@ on:
     branches: [main, master]
     paths:
       - 'src/**'
+      - 'exercise_2/src/**'
       - 'notebooks/**'
+      - 'exercise_2/notebooks/**'
       - 'requirements.txt'
   pull_request:
     branches: [main, master]
@@ -31,14 +33,21 @@ jobs:
           pip install --upgrade pip
           pip install flake8 nbformat
 
-      - name: 🔍 Flake8 – Syntax & style check on src/
+      - name: 🔍 Flake8 – src/
         run: |
           flake8 src/ \
             --max-line-length=120 \
             --ignore=E501,W503,E203 \
             --exclude=__pycache__ \
             --statistics
-        continue-on-error: true  # Không fail CI nếu có style warning
+
+      - name: 🔍 Flake8 – exercise_2/src/
+        run: |
+          flake8 exercise_2/src/ \
+            --max-line-length=120 \
+            --ignore=E501,W503,E203 \
+            --exclude=__pycache__ \
+            --statistics
 
       - name: 📓 Validate Jupyter Notebooks
         run: |
@@ -46,16 +55,20 @@ jobs:
           import json, sys, pathlib
 
           errors = []
-          for nb_path in pathlib.Path("notebooks").glob("*.ipynb"):
-              try:
-                  with open(nb_path, "r", encoding="utf-8") as f:
-                      nb = json.load(f)
-                  # Check basic structure
-                  assert "cells" in nb, "Missing 'cells' key"
-                  assert "nbformat" in nb, "Missing 'nbformat' key"
-                  print(f"  ✅ {nb_path.name} — {len(nb['cells'])} cells")
-              except Exception as e:
-                  errors.append(f"  ❌ {nb_path.name}: {e}")
+          nb_dirs = [pathlib.Path("notebooks"), pathlib.Path("exercise_2/notebooks")]
+
+          for nb_dir in nb_dirs:
+              if not nb_dir.exists():
+                  continue
+              for nb_path in sorted(nb_dir.glob("*.ipynb")):
+                  try:
+                      with open(nb_path, "r", encoding="utf-8") as f:
+                          nb = json.load(f)
+                      assert "cells" in nb, "Missing 'cells' key"
+                      assert "nbformat" in nb, "Missing 'nbformat' key"
+                      print(f"  ✅ {nb_path} — {len(nb['cells'])} cells")
+                  except Exception as e:
+                      errors.append(f"  ❌ {nb_path}: {e}")
 
           if errors:
               print("\nNotebook validation errors:")
@@ -71,8 +84,9 @@ jobs:
         run: |
           echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
           echo "- **Python version**: 3.10" >> $GITHUB_STEP_SUMMARY
-          echo "- **src modules checked**: $(ls src/*.py | wc -l) files" >> $GITHUB_STEP_SUMMARY
-          echo "- **Notebooks validated**: $(ls notebooks/*.ipynb | wc -l) files" >> $GITHUB_STEP_SUMMARY
+          echo "- **src/ files**: $(ls src/*.py 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- **exercise_2/src/ files**: $(ls exercise_2/src/*.py 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Notebooks validated**: $(find notebooks exercise_2/notebooks -name '*.ipynb' 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
 
   check-requirements:
     name: Validate requirements.txt
@@ -87,7 +101,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 🔍 Check requirements file exists and is parseable
+      - name: 🔍 Check requirements.txt
         run: |
           python -c "
           with open('requirements.txt') as f:
