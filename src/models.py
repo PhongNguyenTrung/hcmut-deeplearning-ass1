@@ -9,7 +9,6 @@ from torchvision import models
 from transformers import (
     AutoModelForSequenceClassification,
     ViTForImageClassification,
-    ViTModel,
 )
 try:
     import clip
