@@ -26,11 +26,21 @@ data/multimodal/coco*/
 *.tar.gz
 *.zip
 *.h5
+data/voc*
 
 # Model checkpoints
 results/*.pt
 results/*.pth
 results/*.ckpt
+results/checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# Training outputs (auto-generated)
+results/metrics/
+results/plots/
+runs/
 
 # Logs
 results/logs/

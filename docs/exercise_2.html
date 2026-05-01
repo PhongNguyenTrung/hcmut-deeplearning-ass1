@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bài Tập Lớn Số 2 – Object Detection | CO5085</title>
+  <meta name="description" content="Bài tập lớn số 2: Phát hiện đối tượng – So sánh YOLOv8 vs Faster R-CNN trên Pascal VOC 2012 – CO5085 Deep Learning HCMUT">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #6366f1; --accent: #ec4899; --green: #10b981; --yellow: #f59e0b;
+      --bg: #0f0f1a; --surface: #1a1a2e; --text: #e2e8f0; --text-muted: #94a3b8;
+      --border: rgba(99,102,241,0.2); --glow: rgba(99,102,241,0.12);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+    .bg-blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.1; pointer-events: none; z-index: 0; }
+    .blob1 { width: 500px; height: 500px; background: var(--primary); top: -100px; right: -100px; animation: float 9s ease-in-out infinite alternate; }
+    .blob2 { width: 350px; height: 350px; background: var(--accent); bottom: 100px; left: -100px; animation: float 7s ease-in-out infinite alternate-reverse; }
+    @keyframes float { from { transform: translateY(0); } to { transform: translateY(30px); } }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(16px); background: rgba(15,15,26,0.85);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* Hero */
+    .hero {
+      position: relative; z-index: 1; text-align: center;
+      padding: 6rem 2rem 4rem; max-width: 800px; margin: 0 auto;
+    }
+    .badge {
+      display: inline-block; background: rgba(99,102,241,0.15); border: 1px solid var(--border);
+      border-radius: 999px; padding: 0.35rem 1rem; font-size: 0.8rem; color: #a5b4fc; margin-bottom: 1.2rem;
+    }
+    .hero h1 { font-size: clamp(1.8rem, 4.5vw, 3rem); font-weight: 800; line-height: 1.2;
+      background: linear-gradient(135deg, #e2e8f0, #818cf8, var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
+    .hero p { color: var(--text-muted); font-size: 1rem; line-height: 1.7; }
+
+    /* Links section */
+    .links-section { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 1rem 2rem 3rem; }
+    .links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .link-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 1.4rem; display: flex; flex-direction: column; gap: 0.6rem;
+      text-decoration: none; color: var(--text); transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .link-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px var(--glow); }
+    .link-card .icon { font-size: 1.8rem; }
+    .link-card .title { font-weight: 700; font-size: 0.95rem; }
+    .link-card .desc { color: var(--text-muted); font-size: 0.8rem; }
+
+    /* Sections */
+    .section { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 1rem 2rem 4rem; }
+    .section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .section .sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+    .report-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .report-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.1rem 1.4rem; display: flex; align-items: center; gap: 1rem;
+      text-decoration: none; color: var(--text); transition: background 0.2s, transform 0.2s;
+    }
+    .report-item:hover { background: rgba(99,102,241,0.08); transform: translateX(4px); }
+    .report-item .num {
+      min-width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700;
+    }
+    .report-item .info { flex: 1; }
+    .report-item .info .name { font-weight: 600; font-size: 0.95rem; }
+    .report-item .info .status { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .status-badge {
+      font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 600;
+    }
+    .status-badge.done { background: rgba(16,185,129,0.15); color: #34d399; }
+    .status-badge.wip  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .status-badge.todo { background: rgba(148,163,184,0.1); color: var(--text-muted); }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 2rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.75rem 1rem; text-align: left; font-size: 0.875rem; }
+    th { background: rgba(99,102,241,0.1); font-weight: 700; color: #a5b4fc; border-bottom: 1px solid var(--border); }
+    tr:not(:last-child) td { border-bottom: 1px solid rgba(99,102,241,0.08); }
+    tr:hover td { background: rgba(99,102,241,0.04); }
+    .metric { font-weight: 700; color: var(--green); }
+    .tbd { color: var(--text-muted); font-style: italic; }
+    .table-title { font-size: 1rem; font-weight: 700; margin: 1.5rem 0 0.8rem; color: #a5b4fc; }
+
+    /* Architecture cards */
+    .arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .arch-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.4rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .arch-card .arch-name { font-weight: 700; font-size: 1rem; }
+    .arch-card .arch-type { font-size: 0.75rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .arch-card .arch-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* Dataset card */
+    .dataset-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.4rem; margin-top: 1rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;
+    }
+    .dataset-stat .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .dataset-stat .value { font-weight: 700; font-size: 1.1rem; margin-top: 0.2rem; }
+
+    footer { position: relative; z-index: 1; text-align: center; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.82rem; }
+    footer a { color: var(--primary); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="bg-blob blob1"></div>
+  <div class="bg-blob blob2"></div>
+
+  <nav>
+    <span class="nav-brand">CO5085 · Bài Tập Lớn Số 2</span>
+    <div class="nav-links">
+      <a href="index.html">← Trang chủ</a>
+      <a href="#parts">Nội dung</a>
+      <a href="#models">Mô hình</a>
+      <a href="#results">Kết quả</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="badge">Bài Tập Lớn Số 2 · CO5085 · 2025–2026 HK2</div>
+    <h1>Phát hiện đối tượng:<br>One-Stage vs Two-Stage</h1>
+    <p>
+      So sánh <strong>YOLOv8n</strong> (one-stage, anchor-free) và <strong>Faster R-CNN ResNet-50 FPN</strong>
+      (two-stage) trên Pascal VOC 2012 — mAP, FPS, phân tích lỗi.
+    </p>
+    <p style="margin-top:0.8rem; font-size:0.85rem;">Nguyễn Trung Phong · Giảng viên: Lê Thành Sách</p>
+  </div>
+
+  <!-- Links -->
+  <div class="links-section" id="links">
+    <div class="links-grid">
+      <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/tree/main/exercise_2" class="link-card">
+        <div class="icon">💻</div>
+        <div class="title">Source Code</div>
+        <div class="desc">Thư mục exercise_2/ chứa toàn bộ mã nguồn</div>
+      </a>
+      <a href="#" class="link-card" id="demo-link">
+        <div class="icon">🎬</div>
+        <div class="title">Video Demo</div>
+        <div class="desc">Demo phát hiện đối tượng real-time (sắp có)</div>
+      </a>
+      <a href="#" class="link-card" id="report-link">
+        <div class="icon">📊</div>
+        <div class="title">Report PDF</div>
+        <div class="desc">Báo cáo tổng hợp kết quả thực nghiệm (sắp có)</div>
+      </a>
+      <a href="#" class="link-card" id="video-link">
+        <div class="icon">📹</div>
+        <div class="title">Video Trình bày</div>
+        <div class="desc">Video trình bày trên YouTube (sắp có)</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Nội dung bài tập -->
+  <div class="section" id="parts">
+    <h2>📋 Nội Dung Bài Tập</h2>
+    <div class="sub">5 notebook theo yêu cầu đề bài — dataset: Pascal VOC 2012 (20 lớp, ~11.5K train / 2.8K val)</div>
+    <div class="report-list">
+      <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/blob/main/exercise_2/notebooks/nb1_eda.ipynb" class="report-item">
+        <div class="num">1</div>
+        <div class="info">
+          <div class="name">EDA — Khám phá tập dữ liệu Pascal VOC 2012</div>
+          <div class="status">Phân phối lớp · Thống kê bounding box · Visualize mẫu ảnh · Lý do chọn dataset</div>
+        </div>
+        <span class="status-badge done">✅ Done</span>
+      </a>
+      <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/blob/main/exercise_2/notebooks/nb2_data_pipeline.ipynb" class="report-item">
+        <div class="num">2</div>
+        <div class="info">
+          <div class="name">Data Pipeline — Dataset, DataLoader & Augmentation</div>
+          <div class="status">VOCDetectionDataset · collate_fn · VOC XML → YOLO txt · ImageNet normalization</div>
+        </div>
+        <span class="status-badge done">✅ Done</span>
+      </a>
+      <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/blob/main/exercise_2/notebooks/nb3_train_compare.ipynb" class="report-item">
+        <div class="num">3</div>
+        <div class="info">
+          <div class="name">Training & So sánh — YOLOv8n vs Faster R-CNN</div>
+          <div class="status">Kiến trúc One-Stage vs Two-Stage · Fine-tune từ pretrained COCO · mAP comparison</div>
+        </div>
+        <span class="status-badge wip">⏳ Đang chạy</span>
+      </a>
+      <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/blob/main/exercise_2/notebooks/nb4_results.ipynb" class="report-item">
+        <div class="num">4</div>
+        <div class="info">
+          <div class="name">Kết quả — Bảng số liệu, biểu đồ & phân tích lỗi</div>
+          <div class="status">mAP@0.5 · mAP@0.5:0.95 · Per-class AP · Speed vs Accuracy · Error Analysis (TP/FP/FN)</div>
+        </div>
+        <span class="status-badge wip">⏳ Chờ training</span>
+      </a>
+      <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/blob/main/exercise_2/notebooks/nb5_extensions.ipynb" class="report-item">
+        <div class="num">5</div>
+        <div class="info">
+          <div class="name">Mở rộng — FPS Benchmark, Feature Maps & Gradio Demo</div>
+          <div class="status">FPS vs Image Size · Confidence threshold sweep · FPN feature maps · Web demo</div>
+        </div>
+        <span class="status-badge wip">⏳ Chờ training</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Dataset -->
+  <div class="section" id="dataset">
+    <h2>🗄️ Dataset</h2>
+    <div class="sub">Pascal VOC 2012 — benchmark phát hiện đối tượng chuẩn trong nhiều năm</div>
+    <div class="dataset-card">
+      <div class="dataset-stat">
+        <div class="label">Số lớp</div>
+        <div class="value">20</div>
+      </div>
+      <div class="dataset-stat">
+        <div class="label">Train images</div>
+        <div class="value">11,530</div>
+      </div>
+      <div class="dataset-stat">
+        <div class="label">Val images</div>
+        <div class="value">2,788</div>
+      </div>
+      <div class="dataset-stat">
+        <div class="label">Annotation</div>
+        <div class="value">BBox XML</div>
+      </div>
+      <div class="dataset-stat">
+        <div class="label">Nguồn</div>
+        <div class="value">torchvision</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Các mô hình -->
+  <div class="section" id="models">
+    <h2>🏗️ Các Mô hình So sánh</h2>
+    <div class="sub">Pretrained trên COCO, fine-tune trên Pascal VOC 2012</div>
+
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-type">One-Stage Detector</div>
+        <div class="arch-name">YOLOv8n</div>
+        <div class="arch-desc">
+          Kiến trúc anchor-free, single forward pass.<br>
+          Backbone: CSPDarknet + FPN neck.<br>
+          Output head: classification + localization đồng thời.<br>
+          <strong>3.2M params</strong> · imgsz=640
+        </div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-type">Two-Stage Detector</div>
+        <div class="arch-name">Faster R-CNN ResNet-50 FPN</div>
+        <div class="arch-desc">
+          Two-stage: RPN đề xuất ~300 vùng → ROI Head phân loại.<br>
+          Backbone: ResNet-50 + FPN (multi-scale features).<br>
+          Optimizer: SGD + momentum + StepLR.<br>
+          <strong>41.8M params</strong>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; font-size: 0.875rem; color: var(--text-muted);">
+      <strong style="color: var(--text);">Trade-off chính:</strong>
+      One-stage (YOLO) nhanh hơn ~5–10× nhưng thường kém chính xác hơn two-stage.
+      Faster R-CNN phù hợp khi cần độ chính xác cao; YOLOv8 phù hợp real-time (camera, video).
+    </div>
+  </div>
+
+  <!-- Kết quả -->
+  <div class="section" id="results">
+    <h2>📊 Kết Quả Thực Nghiệm</h2>
+    <div class="sub">Cập nhật sau khi hoàn thành training · Pretrained COCO → Fine-tune VOC 2012</div>
+
+    <div class="table-title">So sánh hai mô hình</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mô hình</th>
+            <th>Loại</th>
+            <th>mAP@0.5</th>
+            <th>mAP@0.5:0.95</th>
+            <th>FPS (MPS)</th>
+            <th>Params</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>YOLOv8n</td>
+            <td>One-stage</td>
+            <td>63.5%</td>
+            <td>44.4%</td>
+            <td>21.6</td>
+            <td>3.2M</td>
+          </tr>
+          <tr>
+            <td>Faster R-CNN ResNet-50 FPN</td>
+            <td>Two-stage</td>
+            <td class="tbd">TBD</td>
+            <td class="tbd">TBD</td>
+            <td class="tbd">TBD</td>
+            <td>41.8M</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.82rem; color:var(--text-muted);">
+      * YOLOv8n: fine-tune 2 epoch trên Pascal VOC 2012, đo trên Apple M4 MPS. Faster R-CNN: chờ training hoàn tất.
+      Cập nhật Faster R-CNN sau khi chạy xong <code>python exercise_2/scripts/run_finetune_frcnn.py</code>.
+    </p>
+
+    <div class="table-title">Per-Class AP@0.5 (dự kiến)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Lớp</th><th>YOLOv8n</th><th>Faster R-CNN</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>person</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>car</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td>dog</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
+          <tr><td colspan="3" style="color:var(--text-muted); font-size:0.8rem;">… 20 lớp, điền sau khi training hoàn tất</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <p>CO5085 – Deep Learning & Ứng dụng trong Thị giác Máy tính · <a href="index.html">ĐH Bách Khoa TP.HCM</a></p>
+    <p style="margin-top:0.4rem; opacity:0.6;">Giảng viên: Lê Thành Sách | Năm học 2025–2026 | Nhóm: Nguyễn Trung Phong</p>
+  </footer>
+</body>
+</html>
