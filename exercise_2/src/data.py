@@ -7,15 +7,12 @@ Pascal VOC 2012:
 - Torchvision hỗ trợ sẵn qua datasets.VOCDetection
 """
 
-import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from torchvision.transforms import functional as F
-from PIL import Image
 
 # ─── Hằng số dataset ──────────────────────────────────────────────────────────
 

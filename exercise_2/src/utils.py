@@ -11,14 +11,13 @@ Cung cấp:
 """
 
 import json
-import os
 from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-from .data import VOC_CLASSES, IMAGENET_MEAN, IMAGENET_STD, NUM_CLASSES
+from .data import VOC_CLASSES, IMAGENET_MEAN, IMAGENET_STD
 
 
 # ─── Palette màu cho 20 lớp ───────────────────────────────────────────────────
@@ -68,7 +67,6 @@ def denormalize_imagenet(img_tensor) -> np.ndarray:
     Đảo ngược ImageNet normalization để visualize.
     img_tensor: Tensor [C, H, W] đã normalize → ndarray [H, W, C] trong [0, 1]
     """
-    import torch
     mean = np.array(IMAGENET_MEAN)
     std = np.array(IMAGENET_STD)
     img = img_tensor.detach().cpu().numpy().transpose(1, 2, 0)
@@ -142,7 +140,7 @@ def visualize_detections(
         cls_idx = int(label) - 1
         color = _PALETTE[cls_idx % len(_PALETTE)]
         rect = mpatches.Rectangle((x1, y1), w, h,
-                                   linewidth=2, edgecolor=color, facecolor="none")
+                                  linewidth=2, edgecolor=color, facecolor="none")
         ax.add_patch(rect)
         name = class_names[cls_idx] if 0 <= cls_idx < len(class_names) else f"cls{label}"
         text = f"{name} {score:.2f}" if scores else name
@@ -156,8 +154,8 @@ def visualize_detections(
             x1, y1, x2, y2 = box
             w, h = x2 - x1, y2 - y1
             rect = mpatches.Rectangle((x1, y1), w, h,
-                                       linewidth=1.5, edgecolor="red",
-                                       facecolor="none", linestyle="--")
+                                      linewidth=1.5, edgecolor="red",
+                                      facecolor="none", linestyle="--")
             ax.add_patch(rect)
 
     if standalone:
