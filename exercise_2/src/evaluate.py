@@ -281,7 +281,7 @@ def measure_fps(
     H, W = image_size
     # frcnn expects ImageNet-normalized floats; yolo expects [0,1] range
     dummy_frcnn = torch.randn(1, 3, H, W).to(device)
-    dummy_yolo  = torch.rand(1, 3, H, W).to(device)
+    dummy_yolo = torch.rand(1, 3, H, W).to(device)
 
     if model_type == "frcnn":
         model.eval()
