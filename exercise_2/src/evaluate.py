@@ -279,7 +279,9 @@ def measure_fps(
         dict {"fps", "ms_per_image", "device", "image_size"}
     """
     H, W = image_size
-    dummy = torch.randn(1, 3, H, W).to(device)
+    # frcnn expects ImageNet-normalized floats; yolo expects [0,1] range
+    dummy_frcnn = torch.randn(1, 3, H, W).to(device)
+    dummy_yolo  = torch.rand(1, 3, H, W).to(device)
 
     if model_type == "frcnn":
         model.eval()
@@ -287,11 +289,11 @@ def measure_fps(
 
         def run_once():
             with torch.no_grad():
-                _ = model([dummy[0]])
+                _ = model([dummy_frcnn[0]])
 
     elif model_type == "yolo":
         def run_once():
-            _ = model.predict(dummy, verbose=False)
+            _ = model.predict(dummy_yolo, verbose=False)
     else:
         raise ValueError(f"model_type phải là 'frcnn' hoặc 'yolo', nhận được '{model_type}'")
 

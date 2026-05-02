@@ -295,7 +295,7 @@
             <th>Loại</th>
             <th>mAP@0.5</th>
             <th>mAP@0.5:0.95</th>
-            <th>FPS (MPS)</th>
+            <th>FPS (GPU T4)</th>
             <th>Params</th>
           </tr>
         </thead>
@@ -303,9 +303,9 @@
           <tr>
             <td>YOLOv8n</td>
             <td>One-stage</td>
-            <td>63.5%</td>
-            <td>44.4%</td>
-            <td>21.6</td>
+            <td>72.8%</td>
+            <td>52.7%</td>
+            <td>76.4</td>
             <td>3.2M</td>
           </tr>
           <tr>
@@ -320,8 +320,8 @@
       </table>
     </div>
     <p style="font-size:0.82rem; color:var(--text-muted);">
-      * YOLOv8n: fine-tune 2 epoch trên Pascal VOC 2012, đo trên Apple M4 MPS. Faster R-CNN: chờ training hoàn tất.
-      Cập nhật Faster R-CNN sau khi chạy xong <code>python exercise_2/scripts/run_finetune_frcnn.py</code>.
+      * YOLOv8n: fine-tune 20 epoch trên Pascal VOC 2012, đo trên Tesla T4 (Google Colab). Faster R-CNN: chờ training hoàn tất.
+      Cập nhật Faster R-CNN sau khi chạy xong cell 6–7 trong <code>colab_train.ipynb</code>.
     </p>
 
     <div class="table-title">Per-Class AP@0.5 (dự kiến)</div>
