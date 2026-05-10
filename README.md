@@ -79,7 +79,7 @@ hcmut-deeplearning-ass1/
 - Course and advising: Lê Thành Sách (CO5085, HCMUT)
 - Pretrained backbones: [torchvision](https://pytorch.org/vision), [HuggingFace Transformers](https://huggingface.co/transformers), [OpenAI CLIP](https://github.com/openai/CLIP), [ultralytics](https://github.com/ultralytics/ultralytics)
 - Datasets: Pascal VOC, CIFAR-100 (Krizhevsky), 20 Newsgroups (Lang), Flickr30k (Young et al.)
-- Compute: Apple Silicon MPS, Google Colab (Tesla T4)
+- Compute: PyTorch with auto-device (CUDA / MPS / CPU)
 
 ---
 

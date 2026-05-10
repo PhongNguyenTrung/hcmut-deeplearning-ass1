@@ -295,7 +295,7 @@
             <th>Loại</th>
             <th>mAP@0.5</th>
             <th>mAP@0.5:0.95</th>
-            <th>FPS (GPU T4)</th>
+            <th>FPS</th>
             <th>Params</th>
           </tr>
         </thead>
@@ -303,10 +303,10 @@
           <tr>
             <td>YOLOv8n</td>
             <td>One-stage</td>
-            <td>65.4%</td>
-            <td>45.8%</td>
-            <td>115.5</td>
-            <td>3.2M</td>
+            <td>63.5%</td>
+            <td>44.4%</td>
+            <td>19.6</td>
+            <td>3.0M</td>
           </tr>
           <tr>
             <td>Faster R-CNN ResNet-50 FPN</td>
@@ -320,43 +320,42 @@
       </table>
     </div>
     <p style="font-size:0.82rem; color:var(--text-muted);">
-      * Cả hai model fine-tune 2 epoch trên Pascal VOC 2012 (5,717 ảnh train · 5,823 ảnh val), đo trên Tesla T4 (Google Colab).
-      YOLOv8n nhanh hơn Faster R-CNN 10.6× ở FPS với mAP@0.5 hơn 1.4 điểm — minh họa rõ trade-off speed vs accuracy.
+      * Cả hai model fine-tune 2 epoch trên Pascal VOC 2012 (5,717 ảnh train · 5,823 ảnh val).
+      YOLOv8n nhanh gần 2× so với Faster R-CNN — minh họa rõ trade-off speed vs accuracy giữa kiến trúc one-stage và two-stage.
     </p>
 
-    <div class="table-title">Per-Class AP@0.5 — Faster R-CNN (top 5 / bottom 5)</div>
+    <div class="table-title">Per-Class AP@0.5 — top 5 / bottom 5 (cả hai model)</div>
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Lớp</th><th>AP@0.5</th></tr>
+          <tr><th>Lớp</th><th>YOLOv8n</th><th>Faster R-CNN</th></tr>
         </thead>
         <tbody>
-          <tr><td>cat</td><td>79.7%</td></tr>
-          <tr><td>person</td><td>79.5%</td></tr>
-          <tr><td>bicycle</td><td>76.5%</td></tr>
-          <tr><td>car</td><td>74.7%</td></tr>
-          <tr><td>bus</td><td>74.2%</td></tr>
-          <tr><td colspan="2" style="color:var(--text-muted); font-size:0.78rem; padding:0.6rem 0;">⋯ 10 lớp ở giữa (xem biểu đồ đầy đủ bên dưới)</td></tr>
-          <tr><td>diningtable</td><td>51.6%</td></tr>
-          <tr><td>chair</td><td>48.3%</td></tr>
-          <tr><td>pottedplant</td><td>47.1%</td></tr>
-          <tr><td>boat</td><td>46.2%</td></tr>
-          <tr><td>sofa</td><td>44.6%</td></tr>
+          <tr><td>person</td><td>82.3%</td><td>79.5%</td></tr>
+          <tr><td>cat</td><td>80.2%</td><td>79.7%</td></tr>
+          <tr><td>bus</td><td>77.0%</td><td>74.2%</td></tr>
+          <tr><td>car</td><td>72.9%</td><td>74.7%</td></tr>
+          <tr><td>bicycle</td><td>67.0%</td><td>76.5%</td></tr>
+          <tr><td colspan="3" style="color:var(--text-muted); font-size:0.78rem; padding:0.6rem 0;">⋯ 10 lớp ở giữa (xem biểu đồ đầy đủ bên dưới)</td></tr>
+          <tr><td>chair</td><td>48.8%</td><td>48.3%</td></tr>
+          <tr><td>sofa</td><td>53.8%</td><td>44.6%</td></tr>
+          <tr><td>bottle</td><td>49.9%</td><td>56.0%</td></tr>
+          <tr><td>boat</td><td>41.6%</td><td>46.2%</td></tr>
+          <tr><td>pottedplant</td><td>41.1%</td><td>47.1%</td></tr>
         </tbody>
       </table>
     </div>
     <p style="font-size:0.82rem; color:var(--text-muted);">
-      * Các lớp dễ nhất (cat, person, bicycle) có nhiều mẫu training và đặc trưng rõ ràng. Lớp khó (sofa, boat, pottedplant) thường bị che khuất hoặc có nhiều biến thể về hình dạng/góc nhìn.
+      * Các lớp dễ (person, cat, bus, car, bicycle) có nhiều mẫu training và đặc trưng rõ ràng — cả hai model đều đạt &gt;65%.
+      Lớp khó (pottedplant, boat, bottle, sofa, chair) thường bị che khuất hoặc có biến thể hình dạng/góc nhìn — cả hai model đều &lt;55%.
+      YOLOv8n nhỉnh hơn ở vài lớp (person, cat, bus, sofa) nhờ anchor-free + dense prediction; Faster R-CNN tốt hơn ở các lớp cần precision cao (bicycle, bottle, pottedplant, boat).
     </p>
 
-    <div class="table-title">Biểu đồ đầy đủ — 20 lớp (Faster R-CNN)</div>
+    <div class="table-title">Biểu đồ đầy đủ — 20 lớp · YOLOv8n vs Faster R-CNN</div>
     <p style="text-align:center;">
-      <img src="https://raw.githubusercontent.com/PhongNguyenTrung/hcmut-deeplearning-ass1/main/exercise_2/results/plots/per_class_ap.png"
-           alt="Faster R-CNN per-class AP across all 20 VOC classes"
+      <img src="per_class_ap.png"
+           alt="Per-class AP comparison across all 20 VOC classes"
            style="max-width:100%; border-radius:12px; border:1px solid var(--border);" />
-    </p>
-    <p style="font-size:0.78rem; color:var(--text-muted); margin-top:0.4rem;">
-      * YOLOv8n không có per-class AP (ultralytics không export theo lớp ở phiên bản này — chỉ có mAP tổng).
     </p>
   </div>
 

@@ -81,7 +81,9 @@ def main():
 
     # 3. Đánh giá mAP bằng ultralytics validate
     print("\n[3/4] Đánh giá mAP trên validation set...")
+    ap_per_class: dict = {}
     try:
+        from exercise_2.src.data import VOC_CLASSES
         from ultralytics import YOLO
         model = YOLO(best_pt)
         val_results = model.val(data=yaml_path, imgsz=args.imgsz, verbose=False)
@@ -89,6 +91,14 @@ def main():
         map5095 = float(val_results.box.map)
         print(f"  mAP@0.5     = {map50 * 100:.1f}%")
         print(f"  mAP@0.5:0.95 = {map5095 * 100:.1f}%")
+
+        # Per-class AP@0.5 — ultralytics returns ap50 indexed by ap_class_index
+        if hasattr(val_results.box, "ap50") and hasattr(val_results.box, "ap_class_index"):
+            ap50_arr = val_results.box.ap50
+            class_idx = val_results.box.ap_class_index.astype(int)
+            for i, cls_id in enumerate(class_idx):
+                if 0 <= cls_id < len(VOC_CLASSES):
+                    ap_per_class[VOC_CLASSES[cls_id]] = float(ap50_arr[i])
     except Exception as e:
         print(f"  [WARN] Không thể tính mAP từ ultralytics: {e}")
         map50, map5095 = 0.0, 0.0
@@ -111,6 +121,7 @@ def main():
         "dataset": "Pascal VOC 2012",
         "mAP_50": map50,
         "mAP_50_95": map5095,
+        "AP_per_class": ap_per_class,
         "fps": fps_info["fps"],
         "ms_per_image": fps_info["ms_per_image"],
         "fps_device": fps_info["device"],

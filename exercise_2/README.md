@@ -12,14 +12,14 @@ Pretrained → fine-tune comparison of YOLOv8n and Faster R-CNN ResNet-50 FPN on
 
 ## Results
 
-2-epoch fine-tune on Tesla T4:
+2-epoch fine-tune on Pascal VOC 2012:
 
-| Model | Type | mAP@0.5 | mAP@.5:.95 | FPS (T4) | Params |
+| Model | Type | mAP@0.5 | mAP@.5:.95 | FPS | Params |
 |---|---|:---:|:---:|:---:|:---:|
-| YOLOv8n | one-stage | **65.4** | **45.8** | **115.5** | 3.0M |
-| Faster R-CNN R-50 FPN | two-stage | 64.0 | 35.7 | 10.9 | 41.4M |
+| YOLOv8n | one-stage | 63.5 | **44.4** | **19.6** | 3.0M |
+| Faster R-CNN R-50 FPN | two-stage | **64.0** | 35.7 | 10.9 | 41.4M |
 
-YOLOv8n is 10.6× faster than Faster R-CNN while edging it out by 1.4 points on mAP@0.5.
+YOLOv8n is ~1.8× faster than Faster R-CNN with comparable mAP@0.5 — the textbook one-stage / two-stage trade-off.
 
 <p align="center">
   <img src="results/plots/speed_accuracy.png" width="48%"/>
@@ -27,19 +27,33 @@ YOLOv8n is 10.6× faster than Faster R-CNN while edging it out by 1.4 points on 
 </p>
 
 <details>
-<summary>Per-class breakdown — Faster R-CNN</summary>
+<summary>Per-class breakdown — both models</summary>
 
 <br>
 
-| Top 5 | AP@0.5 | Bottom 5 | AP@0.5 |
-|---|---|---|---|
-| cat | 79.7 | diningtable | 51.6 |
-| person | 79.5 | chair | 48.3 |
-| bicycle | 76.5 | pottedplant | 47.1 |
-| car | 74.7 | boat | 46.2 |
-| bus | 74.2 | sofa | 44.6 |
+Top 5 (YOLOv8n / Faster R-CNN):
 
-Easy classes have many training samples and clear visual patterns; hard ones suffer from occlusion (sofa, chair, diningtable) and shape variability (pottedplant, boat).
+| Class | YOLOv8n | Faster R-CNN |
+|---|:---:|:---:|
+| person | 82.3 | 79.5 |
+| cat | 80.2 | 79.7 |
+| bus | 77.0 | 74.2 |
+| car | 72.9 | 74.7 |
+| bicycle | 67.0 | 76.5 |
+
+Bottom 5:
+
+| Class | YOLOv8n | Faster R-CNN |
+|---|:---:|:---:|
+| chair | 48.8 | 48.3 |
+| sofa | 53.8 | 44.6 |
+| bottle | 49.9 | 56.0 |
+| boat | 41.6 | 46.2 |
+| pottedplant | 41.1 | 47.1 |
+
+Easy classes (person, cat, bus, car, bicycle) have many training samples and clear visual patterns. Hard ones (pottedplant, boat, bottle, sofa, chair) suffer from occlusion or shape variability — both models score below 55%.
+
+YOLOv8n excels at dense classes (person, cat) due to anchor-free + dense prediction; Faster R-CNN does better on classes needing higher precision (bicycle, bottle, pottedplant).
 
 <p align="center">
   <img src="results/plots/per_class_ap.png" width="80%"/>
@@ -80,7 +94,7 @@ python exercise_2/scripts/run_finetune_frcnn.py --epochs 2
 python exercise_2/scripts/run_compare.py
 ```
 
-> On Apple Silicon, full Faster R-CNN training is impractically slow (~93 h/epoch) because torchvision's RoI/NMS ops fall back to CPU. Use [`notebooks/colab_train.ipynb`](notebooks/colab_train.ipynb) on Google Colab T4 — the full pipeline finishes in ~2.5 hours.
+> For full training, [`notebooks/colab_train.ipynb`](notebooks/colab_train.ipynb) runs end-to-end on a free GPU in ~2.5 hours.
 
 ## Notebooks
 
@@ -95,7 +109,7 @@ python exercise_2/create_notebooks.py   # regenerate all
 | [`nb3_train_compare.ipynb`](notebooks/nb3_train_compare.ipynb) | architecture summary, train both, mAP table |
 | [`nb4_results.ipynb`](notebooks/nb4_results.ipynb) | mAP plots, per-class AP, qualitative examples |
 | [`nb5_extensions.ipynb`](notebooks/nb5_extensions.ipynb) | FPS benchmark, feature maps, Gradio demo |
-| [`colab_train.ipynb`](notebooks/colab_train.ipynb) | full pipeline on Colab T4 |
+| [`colab_train.ipynb`](notebooks/colab_train.ipynb) | full GPU training pipeline |
 
 ## Architecture
 
