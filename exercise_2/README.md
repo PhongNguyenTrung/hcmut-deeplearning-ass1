@@ -33,13 +33,13 @@ YOLOv8n is 10.6× faster than Faster R-CNN while edging it out by 1.4 points on 
 
 | Top 5 | AP@0.5 | Bottom 5 | AP@0.5 |
 |---|---|---|---|
-| cat | 79.7 | sofa | 44.6 |
-| person | 79.5 | pottedplant | 47.1 |
-| bicycle | 76.5 | boat | 46.2 |
-| car | 74.7 | chair | 48.3 |
-| aeroplane | 72.7 | bird | 56.3 |
+| cat | 79.7 | diningtable | 51.6 |
+| person | 79.5 | chair | 48.3 |
+| bicycle | 76.5 | pottedplant | 47.1 |
+| car | 74.7 | boat | 46.2 |
+| bus | 74.2 | sofa | 44.6 |
 
-Easy classes have many training samples and clear visual patterns; hard ones suffer from occlusion (sofa, chair) and shape variability (pottedplant, boat).
+Easy classes have many training samples and clear visual patterns; hard ones suffer from occlusion (sofa, chair, diningtable) and shape variability (pottedplant, boat).
 
 <p align="center">
   <img src="results/plots/per_class_ap.png" width="80%"/>

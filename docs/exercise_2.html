@@ -197,7 +197,7 @@
           <div class="name">Training & So sánh — YOLOv8n vs Faster R-CNN</div>
           <div class="status">Kiến trúc One-Stage vs Two-Stage · Fine-tune từ pretrained COCO · mAP comparison</div>
         </div>
-        <span class="status-badge wip">⏳ Đang chạy</span>
+        <span class="status-badge done">✅ Done</span>
       </a>
       <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/blob/main/exercise_2/notebooks/nb4_results.ipynb" class="report-item">
         <div class="num">4</div>
@@ -205,15 +205,15 @@
           <div class="name">Kết quả — Bảng số liệu, biểu đồ & phân tích lỗi</div>
           <div class="status">mAP@0.5 · mAP@0.5:0.95 · Per-class AP · Speed vs Accuracy · Error Analysis (TP/FP/FN)</div>
         </div>
-        <span class="status-badge wip">⏳ Chờ training</span>
+        <span class="status-badge done">✅ Done</span>
       </a>
       <a href="https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1/blob/main/exercise_2/notebooks/nb5_extensions.ipynb" class="report-item">
         <div class="num">5</div>
         <div class="info">
           <div class="name">Mở rộng — FPS Benchmark, Feature Maps & Gradio Demo</div>
-          <div class="status">FPS vs Image Size · Confidence threshold sweep · FPN feature maps · Web demo</div>
+          <div class="status">FPS benchmark ✅ · Confidence threshold sweep, FPN feature maps, Web demo: TODO</div>
         </div>
-        <span class="status-badge wip">⏳ Chờ training</span>
+        <span class="status-badge wip">⚠ Partial</span>
       </a>
     </div>
   </div>
@@ -324,27 +324,29 @@
       YOLOv8n nhanh hơn Faster R-CNN 10.6× ở FPS với mAP@0.5 hơn 1.4 điểm — minh họa rõ trade-off speed vs accuracy.
     </p>
 
-    <div class="table-title">Per-Class AP@0.5 — Faster R-CNN (top/bottom)</div>
+    <div class="table-title">Per-Class AP@0.5 — Faster R-CNN (top 5 / bottom 5)</div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr><th>Lớp</th><th>AP@0.5</th></tr>
         </thead>
         <tbody>
-          <tr><td>person</td><td>79.5%</td></tr>
           <tr><td>cat</td><td>79.7%</td></tr>
+          <tr><td>person</td><td>79.5%</td></tr>
           <tr><td>bicycle</td><td>76.5%</td></tr>
           <tr><td>car</td><td>74.7%</td></tr>
-          <tr><td>aeroplane</td><td>72.7%</td></tr>
-          <tr><td colspan="2" style="color:var(--text-muted); font-size:0.78rem; padding:0.6rem 0;">⋯ (15 lớp khác — xem <code>results/plots/per_class_ap.png</code>)</td></tr>
-          <tr><td>sofa</td><td>44.6%</td></tr>
+          <tr><td>bus</td><td>74.2%</td></tr>
+          <tr><td colspan="2" style="color:var(--text-muted); font-size:0.78rem; padding:0.6rem 0;">⋯ (10 lớp khác — xem <code>results/plots/per_class_ap.png</code>)</td></tr>
+          <tr><td>diningtable</td><td>51.6%</td></tr>
+          <tr><td>chair</td><td>48.3%</td></tr>
           <tr><td>pottedplant</td><td>47.1%</td></tr>
           <tr><td>boat</td><td>46.2%</td></tr>
+          <tr><td>sofa</td><td>44.6%</td></tr>
         </tbody>
       </table>
     </div>
     <p style="font-size:0.82rem; color:var(--text-muted);">
-      * Các lớp dễ nhất (person, cat, bicycle) có nhiều mẫu training và đặc trưng rõ. Lớp khó (sofa, pottedplant, boat) thường bị che khuất hoặc có nhiều biến thể về hình dạng/góc nhìn.
+      * Các lớp dễ nhất (cat, person, bicycle) có nhiều mẫu training và đặc trưng rõ ràng. Lớp khó (sofa, boat, pottedplant) thường bị che khuất hoặc có nhiều biến thể về hình dạng/góc nhìn.
     </p>
   </div>
 
