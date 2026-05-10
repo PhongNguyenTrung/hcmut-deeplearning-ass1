@@ -336,7 +336,7 @@
           <tr><td>bicycle</td><td>76.5%</td></tr>
           <tr><td>car</td><td>74.7%</td></tr>
           <tr><td>bus</td><td>74.2%</td></tr>
-          <tr><td colspan="2" style="color:var(--text-muted); font-size:0.78rem; padding:0.6rem 0;">⋯ (10 lớp khác — xem <code>results/plots/per_class_ap.png</code>)</td></tr>
+          <tr><td colspan="2" style="color:var(--text-muted); font-size:0.78rem; padding:0.6rem 0;">⋯ 10 lớp ở giữa (xem biểu đồ đầy đủ bên dưới)</td></tr>
           <tr><td>diningtable</td><td>51.6%</td></tr>
           <tr><td>chair</td><td>48.3%</td></tr>
           <tr><td>pottedplant</td><td>47.1%</td></tr>
@@ -347,6 +347,16 @@
     </div>
     <p style="font-size:0.82rem; color:var(--text-muted);">
       * Các lớp dễ nhất (cat, person, bicycle) có nhiều mẫu training và đặc trưng rõ ràng. Lớp khó (sofa, boat, pottedplant) thường bị che khuất hoặc có nhiều biến thể về hình dạng/góc nhìn.
+    </p>
+
+    <div class="table-title">Biểu đồ đầy đủ — 20 lớp (Faster R-CNN)</div>
+    <p style="text-align:center;">
+      <img src="https://raw.githubusercontent.com/PhongNguyenTrung/hcmut-deeplearning-ass1/main/exercise_2/results/plots/per_class_ap.png"
+           alt="Faster R-CNN per-class AP across all 20 VOC classes"
+           style="max-width:100%; border-radius:12px; border:1px solid var(--border);" />
+    </p>
+    <p style="font-size:0.78rem; color:var(--text-muted); margin-top:0.4rem;">
+      * YOLOv8n không có per-class AP (ultralytics không export theo lớp ở phiên bản này — chỉ có mAP tổng).
     </p>
   </div>
 

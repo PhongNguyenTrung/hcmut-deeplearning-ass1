@@ -211,22 +211,32 @@ def plot_per_class_ap(results: dict, save_path: str = None) -> None:
     """
     Biểu đồ horizontal bar: AP@0.5 từng lớp, mỗi mô hình một màu.
 
+    Chỉ vẽ các model có AP_per_class non-empty — model thiếu data sẽ bị bỏ qua
+    để không tạo cột rỗng và legend gây hiểu lầm.
+
     Args:
         results: {"YOLOv8n": {"AP_per_class": {cls: float}}, "Faster R-CNN": {...}}
     """
-    models = list(results.keys())
+    models_with_data = [
+        m for m, r in results.items()
+        if r.get("AP_per_class") and len(r["AP_per_class"]) > 0
+    ]
+    if not models_with_data:
+        print("[plot_per_class_ap] Không có model nào có AP_per_class — skip plot.")
+        return
+
     classes = VOC_CLASSES
     n_classes = len(classes)
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    colors = ["#6366f1", "#ec4899", "#10b981", "#f59e0b"]
-    width = 0.8 / len(models)
+    colors = ["#ec4899", "#6366f1", "#10b981", "#f59e0b"]
+    width = 0.8 / len(models_with_data)
     y = np.arange(n_classes)
 
-    for i, (model_name, color) in enumerate(zip(models, colors)):
-        ap_dict = results[model_name].get("AP_per_class", {})
+    for i, (model_name, color) in enumerate(zip(models_with_data, colors)):
+        ap_dict = results[model_name]["AP_per_class"]
         ap_vals = [ap_dict.get(c, 0) * 100 for c in classes]
-        offset = (i - len(models) / 2 + 0.5) * width
+        offset = (i - len(models_with_data) / 2 + 0.5) * width
         ax.barh(y + offset, ap_vals, width, label=model_name, color=color, alpha=0.85)
 
     ax.set_yticks(y)
