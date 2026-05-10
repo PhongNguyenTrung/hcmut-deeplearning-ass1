@@ -1,90 +1,86 @@
-# CO5085 – Deep Learning & Ứng Dụng trong Thị Giác Máy Tính
-## Bài Tập Lớn 1: Phân loại trên Ảnh, Văn bản và Đa phương thức
+# Deep Learning Portfolio — HCMUT CO5085
 
-**Giảng viên:** Lê Thành Sách
-**Môn học:** CO5085 – Năm học 2025–2026, HK2
-**Hạn nộp:** 23h59, 25/03/2026
+<p align="center">
+  <img src="docs/banner.png" alt="Deep Learning Portfolio" width="100%"/>
+</p>
 
----
+A three-chapter portfolio covering image, language, and multimodal deep learning — from architectures built from first principles to pretrained models fine-tuned on standard benchmarks.
 
-## 📋 Mục Tiêu
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue?style=flat-square)](https://www.python.org/)
+[![PyTorch 2.0+](https://img.shields.io/badge/pytorch-2.0+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-live-brightgreen?style=flat-square)](https://phongnguyentrung.github.io/hcmut-deeplearning-ass1/)
 
-So sánh các mô hình Deep Learning pretrained trên ba loại dữ liệu:
-
-| Loại dữ liệu | Dataset | Mô hình so sánh |
-|---|---|---|
-| 🖼️ **Ảnh** | CIFAR-100 | CNN (ResNet-50, EfficientNet-B0) vs. ViT (ViT-B/16, DeiT-Small) |
-| 📝 **Văn bản** | 20 Newsgroups | RNN (BiLSTM, GRU) vs. Transformer (DistilBERT, BERT-base) |
-| 🔀 **Đa phương thức** | CIFAR-100 Superclasses | Zero-shot (CLIP) vs. Few-shot (CLIP + linear probe) |
+Course CO5085 · ĐH Bách Khoa TP.HCM (HCMUT) · 2025–2026 HK2 · Instructor: Lê Thành Sách
 
 ---
 
-## 🚀 Cài Đặt
+## Three chapters
+
+| # | Project | Domain | Details |
+|---|---|---|---|
+| 1 | Multi-domain comparison: CNN vs ViT, RNN vs Transformer, CLIP zero/few-shot | Image · Text · Multimodal | [docs](https://phongnguyentrung.github.io/hcmut-deeplearning-ass1/ass1.html) |
+| 2 | Architecture engineering from scratch on CIFAR-100 | Computer Vision | [`exercise/`](exercise/README.md) |
+| 3 | One-stage vs two-stage object detection on Pascal VOC 2012 | Object Detection | [`exercise_2/`](exercise_2/README.md) |
+
+All three are physically separate (each has its own `src/`, `scripts/`, `notebooks/`, `results/`) — unified only at the documentation and CI level.
+
+Live site: [phongnguyentrung.github.io/hcmut-deeplearning-ass1](https://phongnguyentrung.github.io/hcmut-deeplearning-ass1/)
+
+## Quick start
 
 ```bash
+git clone https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1.git
+cd hcmut-deeplearning-ass1
+
 python3 -m venv .venv
 source .venv/bin/activate
-
-pip install torch torchvision
+pip install torch torchvision           # auto-detects CUDA / MPS / CPU
 pip install -r requirements.txt
-pip install ipykernel
 python -m ipykernel install --user --name=deeplearning-ass1
 ```
 
-> macOS Apple Silicon: PyTorch tự động dùng MPS. Không cần `--index-url`.
+Each chapter has its own training commands — see the relevant subfolder README.
 
----
+## Repository layout
 
-## ▶️ Chạy Training
-
-```bash
-# Image models (ResNet-50, EfficientNet-B0, ViT-B/16, DeiT-Small)
-python scripts/train_image.py
-python scripts/train_image.py --model resnet50  # chạy từng model
-
-# Text models (BiLSTM, GRU, DistilBERT, BERT)
-python scripts/train_text.py
-python scripts/train_text.py --model distilbert
-
-# Multimodal (CLIP zero-shot + few-shot)
-python scripts/train_multimodal.py
+```
+hcmut-deeplearning-ass1/
+├── README.md                ← this file
+├── LICENSE
+├── requirements.txt
+│
+├── src/, scripts/, notebooks/, results/   ← Chapter 1 (top-level)
+│
+├── exercise/                ← Chapter 2 — see exercise/README.md
+├── exercise_2/              ← Chapter 3 — see exercise_2/README.md
+│
+├── docs/                    ← GitHub Pages site
+├── data/                    ← datasets (gitignored)
+└── .github/workflows/       ← CI: lint + notebook validation
 ```
 
-Kết quả (checkpoints, metrics, biểu đồ) được lưu vào `results/`.
+## Citation
 
----
-
-## 📓 Notebooks
-
-Tất cả notebooks được sinh tự động bởi `create_notebooks.py`:
-
-| Notebook | Nội dung |
-|----------|---------|
-| `01_eda_image.ipynb` | EDA – CIFAR-100 |
-| `02_eda_text.ipynb` | EDA – 20 Newsgroups |
-| `03_eda_multimodal.ipynb` | EDA – Multimodal (CIFAR-100 Superclasses + CLIP) |
-| `04_image_cnn_vit.ipynb` | So sánh CNN vs. ViT |
-| `05_text_rnn_transformer.ipynb` | So sánh RNN vs. Transformer |
-| `06_multimodal_zeroshot_fewshot.ipynb` | CLIP Zero-shot vs. Few-shot |
-| `07_extensions.ipynb` | Grad-CAM, Error Analysis, Fine-tune Strategy, Gradio Demo |
-
-```bash
-# Tái tạo tất cả notebooks
-python create_notebooks.py
+```bibtex
+@misc{nguyen2026dlportfolio,
+  author       = {Nguyễn, Trung Phong},
+  title        = {Deep Learning Portfolio: Pretrained Fine-tuning, Architecture
+                  Engineering, and Object Detection on Pascal VOC, CIFAR-100,
+                  and 20 Newsgroups},
+  year         = {2026},
+  howpublished = {\url{https://github.com/PhongNguyenTrung/hcmut-deeplearning-ass1}},
+  note         = {CO5085, HCMUT}
+}
 ```
 
-> **Không chỉnh sửa file `.ipynb` trực tiếp** — mọi thay đổi phải qua `create_notebooks.py`.
+## Acknowledgments
+
+- Course and advising: Lê Thành Sách (CO5085, HCMUT)
+- Pretrained backbones: [torchvision](https://pytorch.org/vision), [HuggingFace Transformers](https://huggingface.co/transformers), [OpenAI CLIP](https://github.com/openai/CLIP), [ultralytics](https://github.com/ultralytics/ultralytics)
+- Datasets: Pascal VOC, CIFAR-100 (Krizhevsky), 20 Newsgroups (Lang), Flickr30k (Young et al.)
+- Compute: Apple Silicon MPS, Google Colab (Tesla T4)
 
 ---
 
-## 📊 Kết Quả
-
-*(Sẽ được cập nhật sau khi hoàn thành thực nghiệm)*
-
----
-
-## 🔗 Links
-
-- **GitHub Pages:** [Link GitHub Pages]
-- **Video Demo:** [Link video demo]
-- **Video Trình Bày:** [Link YouTube]
+Author: Nguyễn Trung Phong · [github.com/PhongNguyenTrung](https://github.com/PhongNguyenTrung) · phong.nguyen.1911qrs@gmail.com
