@@ -15,24 +15,20 @@
 
 ## Mục lục
 
-1. [Giới thiệu bài toán phân loại ảnh](#1-giới-thiệu-bài-toán-phân-loại-ảnh)
-2. [Tập dữ liệu](#2-tập-dữ-liệu)
-3. [Phần 1 — Xây dựng 4 mô hình phân loại](#3-phần-1--xây-dựng-4-mô-hình-phân-loại)
-4. [Phần 2 — Huấn luyện, đánh giá và so sánh](#4-phần-2--huấn-luyện-đánh-giá-và-so-sánh)
-5. [Phần 3 — Tự hiện thực TransformerEncoder và ViT](#5-phần-3--tự-hiện-thực-transformerencoder-và-vit)
-6. [Phần 4 — Kiến trúc kết hợp và cách embed ảnh khác nhau](#6-phần-4--kiến-trúc-kết-hợp-và-cách-embed-ảnh-khác-nhau)
-7. [Phần 5 — Mô hình LSTM/GRU](#7-phần-5--mô-hình-lstmgru)
-8. [So sánh tổng hợp](#8-so-sánh-tổng-hợp)
-9. [Kết luận](#9-kết-luận)
-10. [Tài liệu tham khảo](#10-tài-liệu-tham-khảo)
+1. [Giới thiệu](#1-giới-thiệu)
+2. [Dataset](#2-dataset)
+3. [Phương pháp](#3-phương-pháp)
+4. [Thảo luận](#4-thảo-luận)
+5. [Kết luận](#5-kết-luận)
+6. [Tài liệu tham khảo](#6-tài-liệu-tham-khảo)
 
 ---
 
-## 1. Giới thiệu bài toán phân loại ảnh
+## 1. Giới thiệu
 
-### 1.1 Phân loại ảnh là gì?
+### 1.1 Mục tiêu bài toán
 
-**Phân loại ảnh** (Image Classification) là bài toán gán nhãn cho một ảnh đầu vào — trả lời câu hỏi *"ảnh này thuộc lớp nào?"*. Đây là một trong những bài toán nền tảng và quan trọng nhất của Thị giác Máy tính (Computer Vision).
+**Phân loại ảnh** (Image Classification) là bài toán gán nhãn cho một ảnh đầu vào — trả lời câu hỏi *"ảnh này thuộc lớp nào?"*. Đây là bài toán nền tảng và quan trọng nhất của Thị giác Máy tính (Computer Vision).
 
 ```
 Đầu vào: ảnh [H × W × C]  →  Mô hình  →  Đầu ra: nhãn lớp (ví dụ: "mèo", "xe hơi")
@@ -40,69 +36,43 @@
 
 Ứng dụng thực tế: nhận dạng khuôn mặt, chẩn đoán hình ảnh y tế, phân loại sản phẩm lỗi trong sản xuất, hệ thống xe tự lái nhận diện biển báo giao thông.
 
-### 1.2 Thách thức của bài toán
+**Các mô hình được sử dụng trong bài tập này:**
 
-Phân loại ảnh khó vì nhiều lý do:
+| Mô hình | Phần | Kiến trúc |
+|---------|------|-----------|
+| Softmax Regression | 1 | Tuyến tính thuần tuý |
+| MLP (Multi-Layer Perceptron) | 1 | Fully-connected |
+| CNN (Convolutional Neural Network) | 1 | Tích chập cục bộ |
+| Vision Transformer (ViT) — PyTorch | 1 | Self-Attention |
+| CustomViT (Tự xây từ `einsum`) | 3 | Self-Attention |
+| CNN + Transformer Hybrid | 4 | Hybrid |
+| SpatialToken ViT | 4 | Attention trên pixel |
+| ChannelToken ViT | 4 | Attention trên channel |
+| LSTM / GRU | 5 | Recurrent |
 
-- **Biến đổi ánh sáng:** Cùng một vật thể nhưng ánh sáng khác nhau cho pixel hoàn toàn khác nhau
-- **Biến đổi góc nhìn:** Cùng một con mèo nhìn từ trước, từ bên, từ trên cho ảnh rất khác nhau
-- **Intra-class variation:** Các con chó thuộc cùng một lớp nhưng hình dạng, màu sắc rất đa dạng
-- **Inter-class similarity:** Báo và hổ thuộc 2 lớp khác nhau nhưng trông rất giống nhau
-- **Occlusion:** Vật thể bị che khuất một phần
-- **Curse of dimensionality:** Ảnh 32×32×3 có 3,072 chiều — không gian quá lớn cho phương pháp truyền thống
+Tất cả mô hình được huấn luyện **from scratch** (không pretrained weights) trên **CIFAR-100** với training loop tự viết bằng PyTorch.
 
-### 1.3 Sự phát triển của các phương pháp
+### 1.2 Mục tiêu học tập
 
-Lịch sử giải quyết bài toán phân loại ảnh phản ánh chính sự tiến hoá của học sâu:
+Bài tập này nhắm đến ba mục tiêu học tập chính:
 
-| Giai đoạn | Phương pháp | Đặc điểm |
-|-----------|-------------|----------|
-| Trước 2012 | HOG, SIFT + SVM | Feature thủ công, không học được |
-| 2012 | AlexNet (CNN) | Feature tự học qua tích chập — bước ngoặt lớn |
-| 2014–2019 | VGGNet, ResNet, EfficientNet | CNN ngày càng sâu hơn, chính xác hơn |
-| 2020–nay | Vision Transformer (ViT) | Áp dụng cơ chế Attention từ NLP vào ảnh |
-| Hiện tại | Hybrid CNN+Transformer | Kết hợp ưu điểm cả hai |
+1. **So sánh các kiến trúc từ đơn giản đến phức tạp:** Từ Softmax Regression tuyến tính → MLP → CNN → ViT → Hybrid, để thấy rõ sự tiến bộ và trade-off giữa các phương pháp qua từng giai đoạn lịch sử học sâu.
 
-### 1.4 Mục tiêu bài tập này
+2. **Hiểu training loop:** Tự viết vòng lặp huấn luyện PyTorch — `zero_grad → forward → loss → backward → clip → step` — thay vì dùng API cấp cao, để hiểu cơ chế tối ưu hoá từ gốc.
 
-Bài tập này xây dựng và so sánh **12 kiến trúc** đại diện cho toàn bộ lịch sử trên — từ mô hình tuyến tính đơn giản nhất đến Hybrid hiện đại:
-
-| Phần | Kiến trúc | Đại diện cho |
-|------|-----------|-------------|
-| Phần 1 | Softmax Regression, MLP | Phương pháp tuyến tính / fully-connected |
-| Phần 1 | SimpleCNN, SimpleViT | CNN cổ điển / Transformer hiện đại |
-| Phần 2 | Training loop tự viết | Hiểu cơ chế tối ưu hoá |
-| Phần 3 | CustomViT (einsum) | Hiểu cơ chế Attention từ gốc |
-| Phần 4 | CNN+Transformer, Spatial/Channel tokens | Kiến trúc hybrid, tokenization |
-| Phần 5 | LSTM, GRU | RNN — phương pháp chuỗi |
-
-Tất cả mô hình được huấn luyện **from scratch** trên **CIFAR-100** (100 lớp, 32×32 pixels) — không dùng pretrained weights — với training loop tự viết bằng PyTorch.
+3. **Hiểu cơ chế Transformer:** Tự hiện thực `MultiHeadAttention` và `TransformerEncoderLayer` từ `nn.Linear`, `LayerNorm`, `torch.einsum` — không dùng module có sẵn — để nắm vững toán học bên trong attention.
 
 ---
 
-## 2. Tập dữ liệu
+## 2. Dataset
 
-### 2.1 Lựa chọn và lý do
+### 2.1 Dataset sử dụng
 
-Bài tập này sử dụng **CIFAR-100** thay vì các tập mặc định (MNIST, CIFAR-10), sau khi trao đổi với giảng viên.
-
-**Lý do chọn CIFAR-100:**
-
-| Tiêu chí | CIFAR-10 (mặc định) | CIFAR-100 (được chọn) |
-|----------|---------------------|----------------------|
-| Số lớp | 10 | 100 |
-| Ảnh mỗi lớp (train) | 5,000 | 500 |
-| Độ khó | Thấp | Trung bình–cao |
-| Softmax Regression đạt | ~70–75% | ~8% |
-| Phân biệt kiến trúc? | Khó (tất cả đều cao) | Rõ ràng |
-
-Với CIFAR-10, ngay cả Softmax Regression cũng đạt ~70% nên không thể thấy rõ sự khác biệt giữa các kiến trúc. CIFAR-100 với 100 lớp làm bài toán đủ khó để phân biệt đặc trưng từng mô hình.
-
-### 2.2 Thông tin tập dữ liệu
+Bài tập này sử dụng **CIFAR-100** (Canadian Institute For Advanced Research, 100 classes).
 
 | Thuộc tính | Giá trị |
 |------------|---------|
-| Tên | CIFAR-100 (Canadian Institute For Advanced Research) |
+| Tên | CIFAR-100 |
 | Số lớp (fine-grained) | 100 |
 | Số superclass | 20 |
 | Kích thước ảnh | 32 × 32 pixels, 3 kênh RGB |
@@ -110,7 +80,21 @@ Với CIFAR-10, ngay cả Softmax Regression cũng đạt ~70% nên không thể
 | Train / Validation / Test | 45,000 / 5,000 / 10,000 |
 | Ảnh mỗi lớp (train) | 450 |
 
-### 2.3 Tiền xử lý và Data Augmentation
+### 2.2 Lý do chọn
+
+CIFAR-100 được chọn thay vì CIFAR-10 (mặc định trong đề bài) để bài toán đủ khó nhằm phân biệt rõ ràng năng lực từng kiến trúc:
+
+| Tiêu chí | CIFAR-10 | CIFAR-100 (được chọn) |
+|----------|----------|----------------------|
+| Số lớp | 10 | 100 |
+| Ảnh mỗi lớp (train) | 5,000 | 500 |
+| Độ khó | Thấp | Trung bình–cao |
+| Softmax Regression đạt | ~70–75% | ~8% |
+| Phân biệt kiến trúc? | Khó (tất cả đều cao) | Rõ ràng |
+
+Với CIFAR-10, ngay cả Softmax Regression đạt ~70% nên không thể thấy sự khác biệt giữa các kiến trúc. CIFAR-100 với 100 lớp fine-grained (ví dụ: baby, boy, girl, man, woman — 5 lớp riêng biệt trong superclass "people") làm bài toán đủ thử thách.
+
+### 2.3 Preprocessing
 
 ```python
 # Chuẩn hoá với thống kê CIFAR-100 (KHÔNG dùng ImageNet stats)
@@ -136,13 +120,15 @@ eval_transforms = transforms.Compose([
 
 ---
 
-## 3. Phần 1 — Xây dựng 4 Mô hình Phân loại
+## 3. Phương pháp
 
 **Quy ước chung:** Mọi mô hình nhận input `[B, 3, 32, 32]` và trả về logits `[B, 100]`. Không thêm softmax trong `forward()` vì `nn.CrossEntropyLoss` đã tích hợp `log_softmax` bên trong.
 
 ---
 
-### 3.1 Mô hình 1 — Softmax Regression
+### 3.1 Phần 1 — Các mô hình cơ bản
+
+#### 3.1.1 Softmax Regression
 
 **Ý tưởng:** Mô hình tuyến tính đơn giản nhất. Ánh xạ trực tiếp từ raw pixels đến xác suất lớp qua một lớp tuyến tính duy nhất.
 
@@ -178,7 +164,7 @@ self.net = nn.Sequential(
 
 ---
 
-### 3.2 Mô hình 2 — MLP (Multi-Layer Perceptron)
+#### 3.1.2 MLP (Multi-Layer Perceptron)
 
 **Ý tưởng:** Thêm các lớp ẩn với hàm kích hoạt phi tuyến ReLU để học được các pattern phức tạp hơn. BatchNorm và Dropout giúp ổn định training và giảm overfitting.
 
@@ -213,7 +199,7 @@ Linear(256 → 100) → [B, 100]
 
 ---
 
-### 3.3 Mô hình 3 — SimpleCNN (VGG-style)
+#### 3.1.3 SimpleCNN (VGG-style)
 
 **Ý tưởng:** Khai thác cấu trúc không gian 2D của ảnh thông qua tích chập cục bộ. Mỗi filter chỉ "nhìn" vùng 3×3, học đặc trưng từ vùng lân cận rồi truyền lên lớp cao hơn.
 
@@ -253,7 +239,7 @@ Linear(128 → 256) → ReLU → Dropout(0.3) → Linear(256 → 100) → [B, 10
 
 ---
 
-### 3.4 Mô hình 4 — SimpleViT (Vision Transformer — PyTorch built-in)
+#### 3.1.4 Vision Transformer (dùng PyTorch built-in)
 
 **Ý tưởng:** Chia ảnh thành các "patches" nhỏ rồi xử lý như chuỗi tokens qua Transformer — tương tự cách xử lý câu trong NLP.
 
@@ -294,9 +280,9 @@ Linear(128 → 256) → ReLU → Dropout(0.3) → Linear(256 → 100) → [B, 10
 
 ---
 
-## 4. Phần 2 — Huấn luyện, Đánh giá và So sánh
+### 3.2 Phần 2 — Training & Evaluation
 
-### 4.1 Training Loop tự viết
+#### 3.2.1 Training loop
 
 Theo yêu cầu bài tập, **không dùng** Lightning `trainer.fit()` hay Keras-style API. Tự viết từng bước:
 
@@ -354,7 +340,13 @@ def fit(model, train_loader, val_loader, config):
     return history
 ```
 
-### 4.2 Cấu hình Hyperparameters
+#### 3.2.2 Metrics
+
+- **Accuracy:** % ảnh phân loại đúng trên tập test
+- **F1-macro:** Trung bình F1 của 100 lớp — đánh giá đều trên tất cả lớp, không bị lớp lớn lấn át
+- **Loss:** CrossEntropyLoss — đo độ tin cậy của xác suất dự đoán
+
+#### 3.2.3 Cấu hình Hyperparameters
 
 | Mô hình | LR | Batch Size | Epochs | Optimizer | Scheduler |
 |---------|-----|-----------|--------|-----------|-----------|
@@ -366,25 +358,23 @@ def fit(model, train_loader, val_loader, config):
 - **AdamW** (weight_decay=1e-4): L2 regularization tích hợp trong optimizer — tốt hơn Adam thuần tuý cho Transformer
 - **CosineAnnealingLR**: LR giảm theo đường cosine từ `lr` → `lr×0.01`. Giúp mô hình "fine-tune" ở giai đoạn cuối thay vì dao động quanh cực tiểu
 
-### 4.3 Training Curves
+#### 3.2.4 Kết quả so sánh
 
 ![Softmax Regression — training curves](../results/plots/softmax_curves.png)
 
-*Hình 1. Softmax Regression: val accuracy dao động quanh 8% từ rất sớm và không cải thiện — biểu hiện điển hình của underfitting. Train loss giảm chậm dù nhiều epochs vì mô hình không đủ capacity.*
+*Hình 1. Softmax Regression: val accuracy dao động quanh 8% từ rất sớm và không cải thiện — biểu hiện điển hình của underfitting.*
 
 ![MLP — training curves](../results/plots/mlp_curves.png)
 
-*Hình 2. MLP: val accuracy tăng đều đến ~epoch 30 rồi plateau tại 20.7%. Khoảng cách train/val nhỏ cho thấy BatchNorm+Dropout hoạt động tốt, nhưng bottleneck là mất spatial structure.*
+*Hình 2. MLP: val accuracy tăng đều đến ~epoch 30 rồi plateau tại 20.7%. BatchNorm+Dropout kiểm soát tốt overfitting.*
 
 ![SimpleCNN — training curves](../results/plots/cnn_curves.png)
 
-*Hình 3. SimpleCNN: đường cong đẹp nhất trong 4 mô hình — tăng liên tục, hội tụ ổn định tại ~36%. Loss giảm smooth nhờ CosineAnnealingLR.*
+*Hình 3. SimpleCNN: đường cong đẹp nhất — tăng liên tục, hội tụ ổn định tại ~36%.*
 
 ![SimpleViT — training curves](../results/plots/vit_curves.png)
 
-*Hình 4. SimpleViT: hội tụ chậm hơn CNN, vẫn tăng nhẹ ở epoch 100 — ViT chưa bão hoà, cần nhiều epochs hơn để hội tụ đầy đủ.*
-
-### 4.4 Kết quả so sánh 4 mô hình
+*Hình 4. SimpleViT: hội tụ chậm hơn CNN, vẫn tăng nhẹ ở epoch 100 — ViT chưa bão hoà.*
 
 ![Part 1+2 bar chart](../results/plots/part1_2_bar.png)
 
@@ -397,32 +387,23 @@ def fit(model, train_loader, val_loader, config):
 | SimpleViT | 24.47% | 25.54% | 22.35% | 821.0K | 29.8%/M |
 | **SimpleCNN** | **35.88%** | **36.38%** | **34.48%** | **346.6K** | **103.5%/M** |
 
-### 4.5 Nhận xét và phân tích
+#### 3.2.5 Nhận xét
 
-**Softmax Regression (7.94%):**
-Chỉ học được biên quyết định tuyến tính trong không gian 3072-chiều. Kết quả chỉ tốt hơn random (1%) khoảng 8 lần. Với 100 lớp có visual similarity cao (ví dụ: cá mập vs cá voi, xe bus vs xe tải), biên tuyến tính hoàn toàn không đủ. F1-macro (6.09%) thấp hơn accuracy (7.94%) cho thấy mô hình tập trung vào vài lớp dễ, bỏ qua phần lớn lớp còn lại.
+**Softmax Regression (7.94%):** Chỉ học được biên quyết định tuyến tính trong không gian 3072-chiều — chỉ tốt hơn random (1%) khoảng 8 lần. F1-macro (6.09%) thấp hơn accuracy (7.94%) cho thấy mô hình tập trung vào vài lớp dễ, bỏ qua phần lớn lớp còn lại.
 
-**MLP (20.63%):**
-Các lớp ẩn với ReLU học được đặc trưng phi tuyến, cải thiện 2.6× so với Softmax. Tuy nhiên `Flatten` phá vỡ quan hệ không gian 2D: hai pixels kề nhau (i,j) và (i,j+1) bị xử lý như hai features độc lập. MLP không biết chúng ở cạnh nhau trong không gian ảnh.
+**MLP (20.63%):** Các lớp ẩn với ReLU học được đặc trưng phi tuyến, cải thiện 2.6× so với Softmax. Tuy nhiên `Flatten` phá vỡ quan hệ không gian 2D: hai pixels kề nhau bị xử lý như hai features độc lập.
 
-**SimpleCNN (35.88%) — tốt nhất Phần 1:**
-- CNN (346.6K params) vượt MLP (1.7M params) — bằng chứng **inductive bias phù hợp quan trọng hơn số tham số**
-- Tích chập 3×3 học đặc trưng cục bộ (edges ở block 1, shapes ở block 2, objects ở block 3)
-- Acc/Param = 103.5%/M — hiệu quả tham số tốt nhất trong 4 mô hình
+**SimpleCNN (35.88%) — tốt nhất Phần 1:** CNN (346.6K params) vượt MLP (1.7M params) — bằng chứng **inductive bias phù hợp quan trọng hơn số tham số**. Acc/Param = 103.5%/M — hiệu quả tốt nhất trong 4 mô hình.
 
-**SimpleViT (24.47%):**
-Thấp hơn CNN vì thiếu spatial inductive bias — phải học mọi quan hệ không gian từ data. Với 45K mẫu (450/lớp), Transformer không đủ data để học tốt như CNN. Val accuracy vẫn tăng ở epoch 100 → cần nhiều epochs hơn nếu tiếp tục train.
+**SimpleViT (24.47%):** Thấp hơn CNN vì thiếu spatial inductive bias — phải học mọi quan hệ không gian từ data. Với 45K mẫu (450/lớp), Transformer chưa đủ data để vượt CNN. Val accuracy vẫn tăng ở epoch 100 → cần nhiều epochs hơn.
 
 ---
 
-## 5. Phần 3 — Tự hiện thực TransformerEncoder và ViT
+### 3.3 Phần 3 — Transformer tự xây
 
-### 5.1 Yêu cầu và ràng buộc
+#### 3.3.1 Transformer Encoder (custom)
 
-Hiện thực TransformerEncoder **chỉ từ**: `nn.Linear`, `nn.LayerNorm`, `torch.einsum`, `F.softmax`, `F.dropout`.
-**Không được dùng**: `nn.MultiheadAttention`, `nn.TransformerEncoderLayer`, `nn.TransformerEncoder`.
-
-### 5.2 Custom Multi-Head Self-Attention
+Hiện thực TransformerEncoder **chỉ từ**: `nn.Linear`, `nn.LayerNorm`, `torch.einsum`, `F.softmax`, `F.dropout`. **Không được dùng**: `nn.MultiheadAttention`, `nn.TransformerEncoderLayer`, `nn.TransformerEncoder`.
 
 **Lý thuyết Scaled Dot-Product Attention:**
 
@@ -436,7 +417,7 @@ Attention(Q,K,V) = softmax(Q·Kᵀ / √d_head) · V
 
 Chia `d_model=128` thành `H=4` heads, mỗi head có `d_head=32`. Mỗi head học một loại quan hệ khác nhau giữa các patches.
 
-**Hiện thực bằng `torch.einsum`:**
+**Multi-Head Attention bằng `torch.einsum`:**
 
 ```python
 class CustomMultiHeadAttention(nn.Module):
@@ -457,7 +438,6 @@ class CustomMultiHeadAttention(nn.Module):
         V = self.W_v(x).reshape(B,T,H,d_h).transpose(1,2)
 
         # Scaled dot-product: 'bhid,bhjd->bhij'
-        # b=batch, h=head, i=query_pos, j=key_pos, d=d_head
         scores = torch.einsum('bhid,bhjd->bhij', Q, K) / math.sqrt(d_h)
         attn   = F.softmax(scores, dim=-1)      # [B, H, T, T]
 
@@ -469,7 +449,7 @@ class CustomMultiHeadAttention(nn.Module):
 
 **Tại sao dùng `einsum`?** `torch.einsum('bhid,bhjd->bhij', Q, K)` tính dot-product song song trên toàn bộ (batch, head) chỉ trong một lệnh. Hiệu quả hơn viết vòng for qua từng head, và tránh lỗi broadcast thủ công.
 
-### 5.3 Custom TransformerEncoderLayer (Pre-LN)
+#### 3.3.2 Pre-LN TransformerEncoderLayer
 
 ```python
 class CustomTransformerEncoderLayer(nn.Module):
@@ -495,49 +475,42 @@ class CustomTransformerEncoderLayer(nn.Module):
 
 | Variant | Công thức | Gradient | Yêu cầu warmup |
 |---------|-----------|----------|----------------|
-| Post-LN (Vaswani 2017) | `x = LN(x + Attn(x))` | Không ổn định lúc đầu | Có (learning rate warmup) |
+| Post-LN (Vaswani 2017) | `x = LN(x + Attn(x))` | Không ổn định lúc đầu | Có |
 | **Pre-LN (được chọn)** | `x = x + Attn(LN(x))` | Ổn định từ đầu | Không bắt buộc |
 
-Pre-LN phù hợp hơn khi train from scratch không có warmup schedule, vì gradient qua residual path không bị LN can thiệp.
+Pre-LN phù hợp hơn khi train from scratch không có warmup schedule.
 
-### 5.4 CustomViT
+#### 3.3.3 ViT tự xây
 
 Giống hệt SimpleViT (Phần 1) — cùng patch embedding, CLS token, positional encoding, classification head — **chỉ thay** `nn.TransformerEncoder` bằng `CustomTransformerEncoder` (stack của `CustomTransformerEncoderLayer`).
 
-### 5.5 Training Curves — So sánh
+#### 3.3.4 So sánh
 
 ![Part 3 comparison curves](../results/plots/part3_comparison_curves.png)
 
-*Hình 6. Training curves của SimpleViT (PyTorch) và CustomViT (tự xây) cùng cấu hình, cùng số epochs. Hai đường curve có hình dạng tương tự — bằng chứng Custom encoder hoạt động đúng cơ chế toán học.*
+*Hình 6. Training curves của SimpleViT (PyTorch) và CustomViT (tự xây) cùng cấu hình. Hai đường curve có hình dạng tương tự — bằng chứng Custom encoder hoạt động đúng.*
 
 ![Part 3 bar chart](../results/plots/part3_bar.png)
 
-*Hình 7. CustomViT (34.56%) cao hơn PyTorch ViT (31.92%) ~2.6%. Chênh lệch này nằm trong biên độ ngẫu nhiên do khởi tạo weights khác nhau.*
-
-### 5.6 Kết quả so sánh
+*Hình 7. CustomViT (34.56%) cao hơn PyTorch ViT (31.92%) ~2.6% — nằm trong biên độ ngẫu nhiên do khởi tạo weights khác nhau.*
 
 | Mô hình | Encoder | Test Acc | Val Acc | F1-macro | Params | Thời gian/epoch |
 |---------|---------|----------|---------|----------|--------|-----------------|
 | SimpleViT (PyTorch) | `nn.TransformerEncoder` | 31.92% | 33.00% | 30.39% | 821.0K | ~45s (MPS) |
 | **CustomViT (Tự xây)** | Custom einsum | **34.56%** | **35.80%** | **33.11%** | 819.4K | ~48s (MPS) |
 
-### 5.7 Nhận xét
-
-**Training curves tương tự (Hình 6):** Tốc độ học, hình dạng đường cong, và mức plateau gần giống nhau — xác nhận Custom MHA hoạt động đúng về mặt toán học với `nn.MultiheadAttention`.
-
-**CustomViT cao hơn 2.64%:** Khoảng chênh lệch này nằm trong biên độ variance ngẫu nhiên (khởi tạo weights khác nhau giữa hai lần chạy). Không thể kết luận custom tốt hơn — **kết luận đúng: hai mô hình tương đương nhau**.
-
-**Số tham số gần giống (821.0K vs 819.4K):** Sai số nhỏ do custom impl bỏ một vài bias terms. Về kiến trúc là hoàn toàn tương đương.
-
-**Cả hai vượt SimpleViT Phần 1 (24.47%→31.92%):** Chỉ khác số epochs (100 thay vì 100 nhưng với config khác) → xác nhận ViT cần train dài để hội tụ đầy đủ.
+**Nhận xét:**
+- Training curves tương tự → xác nhận Custom MHA hoạt động đúng về toán học
+- CustomViT cao hơn 2.64%: nằm trong biên độ variance ngẫu nhiên — **kết luận: hai mô hình tương đương nhau**
+- Số tham số gần giống (821.0K vs 819.4K): sai số nhỏ do custom impl bỏ một vài bias terms
 
 ---
 
-## 6. Phần 4 — Kiến trúc Kết hợp và Cách Embed Ảnh Khác nhau
+### 3.4 Phần 4 — Kiến trúc nâng cao
 
-Ba cách tokenize ảnh khác nhau được triển khai và so sánh:
+Ba cách tokenize ảnh khác nhau được triển khai và so sánh.
 
-### 6.1 Kiến trúc 4A — CNN + Transformer Hybrid
+#### 3.4.1 CNN + Transformer Hybrid
 
 **Ý tưởng:** Dùng CNN làm backbone trích đặc trưng tạo tokens có chất lượng cao, sau đó đưa vào Transformer để học quan hệ toàn cục.
 
@@ -566,13 +539,9 @@ Params: 446.1K
 
 **Tại sao hiệu quả:** CNN xử lý đặc trưng cục bộ (edges, textures) → tạo ra 64 tokens giàu thông tin. Transformer học quan hệ toàn cục giữa các đặc trưng này. Kết hợp được cả hai thế mạnh: spatial inductive bias (CNN) và global attention (Transformer).
 
----
+#### 3.4.2 Các cách tokenize và embed ảnh khác nhau
 
-### 6.2 Kiến trúc 4B — SpatialToken ViT (H×W positions làm tokens)
-
-**Ý tưởng:** Coi mỗi vị trí pixel là một token — phương pháp tokenize "naive" nhất.
-
-**Kiến trúc:**
+**SpatialToken ViT — coi H×W positions làm tokens:**
 
 ```
 Đầu vào: [B, 3, 32, 32]
@@ -591,13 +560,7 @@ Params: 172.4K
 ⚠️ Attention matrix: [B, 4, 1024, 1024] → ~512MB RAM → batch_size=32
 ```
 
----
-
-### 6.3 Kiến trúc 4C — ChannelToken ViT (C channels làm tokens)
-
-**Ý tưởng:** Coi mỗi channel là một token — spatial features của channel đó là feature vector.
-
-**Kiến trúc:**
+**ChannelToken ViT — coi C channels làm tokens:**
 
 ```
 Đầu vào: [B, 3, 32, 32]
@@ -618,21 +581,15 @@ Linear(1024→128) → [B, 64, 128]   64 channel tokens
 Params: 549.5K
 ```
 
-Mỗi token biểu diễn "đặc trưng kênh này xuất hiện ở đâu trong ảnh?" — liên quan đến channel attention trong SENet.
-
----
-
-### 6.4 Training Curves
+#### 3.4.3 So sánh
 
 ![Part 4 comparison curves](../results/plots/part4_comparison_curves.png)
 
-*Hình 8. CNN+Transformer hội tụ tốt và ổn định. SpatialToken và ChannelToken plateau sớm ở mức thấp — dấu hiệu token quality kém, mô hình không học được.*
+*Hình 8. CNN+Transformer hội tụ tốt và ổn định. SpatialToken và ChannelToken plateau sớm ở mức thấp — dấu hiệu token quality kém.*
 
 ![Part 4 bar chart](../results/plots/part4_bar.png)
 
 *Hình 9. Khoảng cách rất lớn giữa CNN+Transformer (37.25%) và hai kiến trúc còn lại chứng minh token quality quyết định hiệu năng Transformer.*
-
-### 6.5 Kết quả so sánh
 
 | Mô hình | Cách tokenize | Seq Len | Token Dim | Test Acc | Val Acc | F1-macro | Params |
 |---------|--------------|---------|-----------|----------|---------|----------|--------|
@@ -640,34 +597,27 @@ Mỗi token biểu diễn "đặc trưng kênh này xuất hiện ở đâu tron
 | ChannelToken ViT | C channels | 64 | 128 | 17.56% | 18.18% | 15.29% | 549.5K |
 | SpatialToken ViT | H×W pixels | 1,024 | 64 | 13.10% | 13.12% | 9.86% | 172.4K |
 
-### 6.6 Nhận xét và phân tích
-
-**CNN+Transformer (37.25%) — tốt nhất toàn bài:**
-CNN giảm spatial size 32×32 → 8×8 (giảm 16×) đồng thời học đặc trưng có ý nghĩa. Mỗi trong 64 tokens là một biểu diễn phức tạp của một vùng 4×4 pixels đã được xử lý qua 2 ConvBlocks. Transformer sau đó học quan hệ toàn cục giữa các biểu diễn này. Attention cost: O(64²) = 4,096 — rất hiệu quả.
-
-**SpatialToken ViT (13.10%) — thất bại hoàn toàn:**
-1,024 tokens từ raw pixels — mỗi token chỉ có 3 giá trị RGB, thông tin cực kỳ thô. Transformer phải đồng thời học *đặc trưng cục bộ* (từ 3 RGB) VÀ *quan hệ toàn cục* (trong 1,024 positions) chỉ với 2 layers — không đủ capacity. Đây chính xác là lý do ViT gốc (Dosovitskiy 2021) dùng patches: patch 4×4 có 48 features, phong phú hơn 16× so với 3 RGB.
-
-**Kết luận định lượng: Token quality > Token quantity.** SpatialToken có 16× nhiều tokens hơn CNN+Transformer nhưng kết quả tệ hơn 2.8×. Mỗi token cần mang đủ semantic information để Transformer học được.
-
-**ChannelToken ViT (17.56%):** Conv1×1 chỉ học linear combination của 3 input channels để tạo 64 channels mới. Đây không phải đặc trưng spatial phức tạp — cần CNN backbone sâu hơn để tạo channel tokens có ý nghĩa.
+**Nhận xét:**
+- **CNN+Transformer (37.25%) — tốt nhất toàn bài:** Attention cost O(64²) = 4,096 — hiệu quả. CNN backbone tạo token chất lượng cao, Transformer chỉ cần học quan hệ toàn cục.
+- **SpatialToken ViT (13.10%) — thất bại:** 1,024 tokens từ raw pixels — mỗi token chỉ có 3 giá trị RGB, thông tin cực kỳ thô. Đây chính xác là lý do ViT gốc dùng patches (patch 4×4 có 48 features, phong phú hơn 16× so với 3 RGB).
+- **Kết luận: Token quality > Token quantity.** SpatialToken có 16× nhiều tokens nhưng kết quả tệ hơn 2.8×.
 
 ---
 
-## 7. Phần 5 — Mô hình LSTM/GRU
+### 3.5 Phần 5 — LSTM/GRU
 
-### 7.1 Cách biểu diễn ảnh thành chuỗi
+#### 3.5.1 Biểu diễn ảnh thành chuỗi
 
 Ảnh không phải chuỗi thời gian tự nhiên. Bài tập này thử nghiệm 4 cách "đọc" ảnh thành sequence:
 
-| Seq Mode | Seq Length (T) | Input Size (D) | Cách biểu diễn | Thông tin/bước |
-|----------|----------------|----------------|----------------|----------------|
-| **Row-wise** | 32 | 96 = 32×3 | Mỗi hàng pixels | Toàn bộ hàng ngang (context rộng) |
-| Col-wise | 32 | 96 = 32×3 | Mỗi cột pixels | Toàn bộ cột dọc |
-| **Patch4** | 64 = 8×8 | 48 = 4×4×3 | 64 patches 4×4 | Một vùng nhỏ 4×4 pixels |
-| Patch8 | 16 = 4×4 | 192 = 8×8×3 | 16 patches 8×8 | Một vùng lớn 8×8 pixels |
+| Seq Mode | Seq Length (T) | Input Size (D) | Cách biểu diễn |
+|----------|----------------|----------------|----------------|
+| **Row-wise** | 32 | 96 = 32×3 | Mỗi hàng pixels |
+| Col-wise | 32 | 96 = 32×3 | Mỗi cột pixels |
+| **Patch4** | 64 = 8×8 | 48 = 4×4×3 | 64 patches 4×4 |
+| Patch8 | 16 = 4×4 | 192 = 8×8×3 | 16 patches 8×8 |
 
-### 7.2 Kiến trúc ImageLSTM / ImageGRU
+#### 3.5.2 Kiến trúc
 
 ```
 Đầu vào: [B, T, input_size]     (T và input_size tuỳ theo seq_mode)
@@ -677,35 +627,32 @@ BiLSTM / BiGRU (hidden=256, num_layers=2, bidirectional=True, dropout=0.3)
     Tạo 2 luồng: forward (bước 0 → T-1) + backward (bước T-1 → 0)
     │
     ▼
-concat(h_n[-2], h_n[-1]) → [B, 512]     (forward final state + backward final state)
+concat(h_n[-2], h_n[-1]) → [B, 512]
     │
     ▼
 Dropout(0.3) → Linear(512 → 100) → [B, 100]
 ```
 
-**Bidirectional:** Mỗi timestep "nhìn" được context từ cả hai phía (đọc hàng từ trái sang phải VÀ từ phải sang trái). Với ảnh, điều này giúp pixel ở giữa "biết" về cả pixels bên trái lẫn bên phải.
+**Bidirectional:** Mỗi timestep "nhìn" được context từ cả hai phía — giúp pixel ở giữa "biết" về cả pixels bên trái lẫn bên phải.
 
 **So sánh LSTM vs GRU:**
 
 | Đặc điểm | LSTM | GRU |
 |----------|------|-----|
 | Số gates | 4: forget (f), input (i), output (o), cell (g) | 2: reset (r), update (z) |
-| Cell state | Có (c_t — long-term memory riêng biệt) | Không (c_t tích hợp trong h_t) |
+| Cell state | Có (c_t — long-term memory riêng biệt) | Không (tích hợp trong h_t) |
 | Số params/layer | 4 × (D+H) × H + 4H | 3 × (D+H) × H + 3H |
-| Tốc độ train | Chậm hơn ~25% | Nhanh hơn |
-| Phù hợp | Chuỗi rất dài (>1000 steps, long-range dependency) | Chuỗi vừa (≤100 steps) |
+| Phù hợp | Chuỗi rất dài (>1000 steps) | Chuỗi vừa (≤100 steps) |
 
-### 7.3 Training Curves
+#### 3.5.3 So sánh
 
 ![Part 5 comparison curves](../results/plots/part5_comparison_curves.png)
 
-*Hình 10. GRU (cả row và patch4) hội tụ nhanh hơn và đạt val accuracy cao hơn LSTM đáng kể. LSTM có khoảng cách train/val lớn hơn → overfitting nhiều hơn trong cùng 30 epochs.*
+*Hình 10. GRU hội tụ nhanh hơn và đạt val accuracy cao hơn LSTM. LSTM có khoảng cách train/val lớn hơn → overfitting nhiều hơn.*
 
 ![Part 5 bar chart](../results/plots/part5_bar.png)
 
 *Hình 11. GRU-row đạt 36.57% — ngang bằng SimpleCNN (35.88%), một kết quả bất ngờ.*
-
-### 7.4 Kết quả so sánh
 
 | Mô hình | Seq Mode | T | D | Test Acc | Val Acc | F1-macro | Params |
 |---------|----------|---|---|----------|---------|----------|--------|
@@ -714,25 +661,19 @@ Dropout(0.3) → Linear(512 → 100) → [B, 100]
 | LSTM | Row-wise | 32 | 96 | 29.36% | 29.62% | 28.34% | 2.4M |
 | LSTM | Patch 4×4 | 64 | 48 | 27.73% | 27.78% | 26.41% | 2.3M |
 
-### 7.5 Nhận xét và phân tích
+#### 3.5.4 Nhận xét
 
-**GRU vượt LSTM +7.2% (row) và +7.9% (patch4):**
-Đây là kết quả không trực quan — LSTM có cơ chế phức tạp hơn nhưng lại tệ hơn. Giải thích: chuỗi ảnh CIFAR ngắn (T=32 hoặc T=64) không có long-range dependencies phức tạp đến mức cần cell state riêng biệt của LSTM. Với chuỗi ngắn, GRU có ít params hơn → ít overfitting hơn → hội tụ tốt hơn trong 30 epochs. Training curves (Hình 10) xác nhận: khoảng cách train/val của LSTM lớn hơn GRU.
+**GRU vượt LSTM +7.2% (row) và +7.9% (patch4):** Đây là kết quả không trực quan — LSTM có cơ chế phức tạp hơn nhưng lại tệ hơn. Giải thích: chuỗi ảnh CIFAR ngắn (T=32 hoặc T=64) không cần cell state riêng biệt của LSTM. GRU ít params hơn → ít overfitting hơn trong 30 epochs.
 
-**GRU-row (36.57%) cạnh tranh ngang SimpleCNN (35.88%):**
-Kết quả bất ngờ nhất của bài tập. Tuy nhiên cần lưu ý: GRU-row cần 1.8M params để đạt kết quả tương đương CNN với chỉ 346.6K params — **kém hiệu quả tham số hơn 5×**.
+**GRU-row (36.57%) cạnh tranh ngang SimpleCNN (35.88%):** Tuy nhiên cần 1.8M params để đạt kết quả tương đương CNN với chỉ 346.6K params — **kém hiệu quả tham số hơn 5×**.
 
-**Row-wise tốt hơn Patch4 (~1%):**
-Row-wise (T=32, D=96) cho mỗi bước RNN thấy toàn bộ hàng ngang — context spatial rộng hơn. Patch4 (T=64, D=48) chia nhỏ hơn nên mỗi bước ít thông tin hơn. Sự khác biệt nhỏ (~1%) cho thấy hai cách biểu diễn tương đương nhau ở mức này.
-
-**RNN kém CNN về cơ bản:**
-Ảnh có cấu trúc **2D** — quan hệ giữa pixel (i,j) và pixel (i+1,j) (hai hàng liền kề) quan trọng không kém quan hệ (i,j) và (i,j+1) (hai pixels cùng hàng). Đọc theo hàng (row-wise) chỉ capture được quan hệ ngang, bỏ qua quan hệ dọc giữa các hàng. Đây là hạn chế cốt lõi của RNN với dữ liệu 2D.
+**RNN kém CNN về cơ bản:** Ảnh có cấu trúc **2D** — quan hệ dọc giữa các hàng quan trọng không kém quan hệ ngang trong cùng hàng. Đọc row-wise bỏ qua quan hệ dọc này — hạn chế cốt lõi của RNN với dữ liệu 2D.
 
 ---
 
-## 8. So sánh Tổng hợp
+## 4. Thảo luận
 
-### 8.1 Bảng xếp hạng toàn bộ 12 mô hình
+### 4.1 Bảng xếp hạng toàn bộ 12 mô hình
 
 | # | Mô hình | Phần | Kiến trúc | Test Acc | F1-macro | Params | Acc/Param |
 |---|---------|------|-----------|----------|----------|--------|-----------|
@@ -752,45 +693,65 @@ Row-wise (T=32, D=96) cho mỗi bước RNN thấy toàn bộ hàng ngang — co
 
 > **Acc/Param** = Test Accuracy / (số triệu tham số) — đo lường hiệu quả sử dụng tham số. SimpleCNN đạt 103.5%/M — tốt nhất trong các mô hình học được tốt.
 
-### 8.2 Phân tích theo nhóm
+### 4.2 CNN vs ViT
 
-**CNN-based:**
-- SimpleCNN hiệu quả tham số tốt nhất (103.5%/M) với chỉ 346.6K params
-- CNN+Transformer cải thiện thêm +1.37% bằng cách thêm global attention (+99.5K params)
-- Kết luận: CNN là lựa chọn tốt nhất cho ảnh nhỏ (32×32) train from scratch
+| Khía cạnh | CNN | ViT |
+|-----------|-----|-----|
+| Inductive bias | Locality + weight sharing | Không có — học từ data |
+| Data requirement | Thấp (hiệu quả với vài chục nghìn ảnh) | Cao (cần hàng triệu ảnh pretrain) |
+| Accuracy (bài này) | SimpleCNN: 35.88% | SimpleViT: 24.47% (Phần 1) / 31.92% (Phần 3) |
+| Efficiency | 103.5%/M | 29.8%–42.2%/M |
+| Receptive field | Tăng dần theo số layers | Global từ layer 1 |
+| Phù hợp | Small datasets, edge deployment | Large-scale pretraining |
 
-**Transformer-based:**
-- ViT Phần 1 vs Phần 3 (24.47% vs 31.92%): chỉ khác cấu hình epochs → ViT cần train dài hơn CNN
-- Custom ≈ PyTorch ViT: xác nhận hiện thực Custom encoder đúng
-- SpatialToken ViT thất bại: raw pixel tokens quá thô → token quality quan trọng hơn token quantity
+**Kết luận:** Với CIFAR-100 (45K mẫu, from scratch), CNN chiếm ưu thế rõ ràng nhờ inductive bias phù hợp. ViT thực sự vượt CNN khi được pretrained trên ImageNet-21K (14M ảnh) — không phải kiến trúc kém, mà thiếu data.
 
-**RNN-based:**
-- GRU (~36%) cạnh tranh với CNN nhưng cần 5× nhiều tham số hơn
-- LSTM (~28–29%) kém GRU do overfitting với chuỗi ngắn (T=32)
-- RNN không phù hợp tự nhiên với ảnh 2D
+### 4.3 Transformer vs RNN
 
-**Linear/FC:**
-- Softmax (7.94%) và MLP (20.63%) — giới hạn rõ ràng khi thiếu spatial inductive bias
+| Khía cạnh | Transformer | RNN (LSTM/GRU) |
+|-----------|-------------|----------------|
+| Cơ chế | Self-Attention (toàn cục, song song) | Recurrence (tuần tự) |
+| Long-range dependency | O(1) — mọi cặp token tương tác trực tiếp | O(T) — thông tin lan truyền qua time steps |
+| Parallelism | Cao (training nhanh) | Thấp (phải tính tuần tự) |
+| Memory | O(T²) attention matrix | O(T) hidden states |
+| Với ảnh CIFAR (bài này) | ViT: 24–34% | GRU: 35–36%, LSTM: 27–29% |
+
+**Kết quả bất ngờ:** GRU (~36%) cạnh tranh với CNN và vượt ViT from scratch. Điều này do: (1) BiGRU học patterns hàng ngang hiệu quả, (2) chuỗi ngắn T=32 không cần attention toàn cục.
+
+### 4.4 Trade-off: Accuracy vs tốc độ và data requirement
+
+| Kiến trúc | Accuracy | Training Time/epoch | Data Requirement | Phù hợp |
+|-----------|----------|---------------------|------------------|---------|
+| CNN | ~36% | ~15s | Thấp | Small dataset, production |
+| CNN+Transformer | ~37% | ~20s | Trung bình | Cần global context |
+| GRU | ~36% | ~25s | Trung bình | Sequential patterns |
+| ViT (from scratch) | ~31% | ~45s | Cao | Pretrain available |
+| LSTM | ~28% | ~30s | Trung bình | Long sequences |
+| Softmax/MLP | 8–21% | ~5s | Thấp | Baseline only |
 
 ---
 
-## 9. Kết luận
+## 5. Kết luận
 
-### 9.1 Sáu bài học từ thực nghiệm
+### 5.1 Mô hình tốt nhất
 
-1. **Inductive bias phù hợp quan trọng hơn model size:** SimpleCNN (346.6K) vượt MLP (1.7M) và LSTM (2.4M). Thiết kế kiến trúc phù hợp với cấu trúc dữ liệu hiệu quả hơn chỉ tăng số tham số.
+**CNN+Transformer Hybrid** đạt test accuracy cao nhất (37.25%), kết hợp spatial inductive bias từ CNN và global attention từ Transformer.
 
-2. **ViT cần data lớn để hội tụ tốt:** Với 45K mẫu from scratch, ViT (24–34%) thua CNN (36–37%). ViT thực sự vượt CNN khi được pretrained trên ImageNet-21K (14M ảnh) — không phải kiến trúc kém, mà thiếu data.
+**SimpleCNN** là lựa chọn tốt nhất xét về **hiệu quả tham số** (103.5%/M): chỉ 346.6K params, huấn luyện nhanh, không cần tuning phức tạp.
+
+### 5.2 Insight chính
+
+1. **Inductive bias phù hợp quan trọng hơn model size:** SimpleCNN (346.6K) vượt MLP (1.7M) và LSTM (2.4M). Kiến trúc phù hợp với cấu trúc dữ liệu hiệu quả hơn chỉ tăng số tham số.
+
+2. **ViT cần data lớn để hội tụ tốt:** Với 45K mẫu from scratch, ViT (24–34%) thua CNN (36–37%). ViT thực sự vượt CNN khi được pretrained trên tập lớn — không phải kiến trúc kém, mà thiếu data.
 
 3. **Hybrid kết hợp được hai thế mạnh:** CNN+Transformer đạt 37.25% — tốt nhất toàn bài — bằng cách dùng CNN tạo tokens chất lượng cao rồi Transformer học quan hệ toàn cục.
 
-4. **Token quality > token quantity:** SpatialToken ViT (1,024 raw pixel tokens → 13.10%) thua CNN features (64 high-quality tokens → 37.25%). 16× nhiều tokens nhưng kết quả tệ hơn 2.8×.
+4. **Token quality > Token quantity:** SpatialToken ViT (1,024 raw pixel tokens → 13.10%) thua CNN features (64 high-quality tokens → 37.25%). 16× nhiều tokens nhưng kết quả tệ hơn 2.8×.
 
-5. **Custom Transformer = PyTorch Transformer:** Training curves tương tự, accuracy tương đương (34.56% vs 31.92%) → hiện thực Custom MHA bằng `torch.einsum` là đúng về toán học.
+5. **GRU ≥ LSTM cho chuỗi ngắn:** Ưu thế của LSTM rõ hơn ở T>1,000 steps. Với T=32–64 (ảnh CIFAR), GRU ít tham số hơn → ít overfitting → kết quả tốt hơn.
 
-6. **GRU ≥ LSTM cho chuỗi ngắn:** Ưu thế của LSTM rõ hơn ở T>1,000 steps. Với T=32–64 (ảnh CIFAR), GRU ít tham số hơn → ít overfitting → kết quả tốt hơn LSTM.
-
-### 9.2 Hướng cải thiện tiếp theo
+### 5.3 Hướng cải thiện tiếp theo
 
 - **Data augmentation mạnh hơn:** CutMix, MixUp, RandAugment → dự kiến +5–10% accuracy
 - **LR warmup cho ViT:** Linear warmup 10 epochs trước CosineAnnealing → ổn định hơn giai đoạn đầu
@@ -800,7 +761,7 @@ Row-wise (T=32, D=96) cho mỗi bước RNN thấy toàn bộ hàng ngang — co
 
 ---
 
-## 10. Tài liệu tham khảo
+## 6. Tài liệu tham khảo
 
 1. Dosovitskiy, A. et al. (2021). *An Image is Worth 16×16 Words: Transformers for Image Recognition at Scale*. ICLR 2021.
 2. Vaswani, A. et al. (2017). *Attention Is All You Need*. NeurIPS 2017.

@@ -303,41 +303,49 @@
           <tr>
             <td>YOLOv8n</td>
             <td>One-stage</td>
-            <td>72.8%</td>
-            <td>52.7%</td>
-            <td>76.4</td>
+            <td>65.4%</td>
+            <td>45.8%</td>
+            <td>115.5</td>
             <td>3.2M</td>
           </tr>
           <tr>
             <td>Faster R-CNN ResNet-50 FPN</td>
             <td>Two-stage</td>
-            <td class="tbd">TBD</td>
-            <td class="tbd">TBD</td>
-            <td class="tbd">TBD</td>
-            <td>41.8M</td>
+            <td>64.0%</td>
+            <td>35.7%</td>
+            <td>10.9</td>
+            <td>41.4M</td>
           </tr>
         </tbody>
       </table>
     </div>
     <p style="font-size:0.82rem; color:var(--text-muted);">
-      * YOLOv8n: fine-tune 20 epoch trên Pascal VOC 2012, đo trên Tesla T4 (Google Colab). Faster R-CNN: chờ training hoàn tất.
-      Cập nhật Faster R-CNN sau khi chạy xong cell 6–7 trong <code>colab_train.ipynb</code>.
+      * Cả hai model fine-tune 2 epoch trên Pascal VOC 2012 (5,717 ảnh train · 5,823 ảnh val), đo trên Tesla T4 (Google Colab).
+      YOLOv8n nhanh hơn Faster R-CNN 10.6× ở FPS với mAP@0.5 hơn 1.4 điểm — minh họa rõ trade-off speed vs accuracy.
     </p>
 
-    <div class="table-title">Per-Class AP@0.5 (dự kiến)</div>
+    <div class="table-title">Per-Class AP@0.5 — Faster R-CNN (top/bottom)</div>
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Lớp</th><th>YOLOv8n</th><th>Faster R-CNN</th></tr>
+          <tr><th>Lớp</th><th>AP@0.5</th></tr>
         </thead>
         <tbody>
-          <tr><td>person</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>car</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td>dog</td><td class="tbd">TBD</td><td class="tbd">TBD</td></tr>
-          <tr><td colspan="3" style="color:var(--text-muted); font-size:0.8rem;">… 20 lớp, điền sau khi training hoàn tất</td></tr>
+          <tr><td>person</td><td>79.5%</td></tr>
+          <tr><td>cat</td><td>79.7%</td></tr>
+          <tr><td>bicycle</td><td>76.5%</td></tr>
+          <tr><td>car</td><td>74.7%</td></tr>
+          <tr><td>aeroplane</td><td>72.7%</td></tr>
+          <tr><td colspan="2" style="color:var(--text-muted); font-size:0.78rem; padding:0.6rem 0;">⋯ (15 lớp khác — xem <code>results/plots/per_class_ap.png</code>)</td></tr>
+          <tr><td>sofa</td><td>44.6%</td></tr>
+          <tr><td>pottedplant</td><td>47.1%</td></tr>
+          <tr><td>boat</td><td>46.2%</td></tr>
         </tbody>
       </table>
     </div>
+    <p style="font-size:0.82rem; color:var(--text-muted);">
+      * Các lớp dễ nhất (person, cat, bicycle) có nhiều mẫu training và đặc trưng rõ. Lớp khó (sofa, pottedplant, boat) thường bị che khuất hoặc có nhiều biến thể về hình dạng/góc nhìn.
+    </p>
   </div>
 
   <footer>

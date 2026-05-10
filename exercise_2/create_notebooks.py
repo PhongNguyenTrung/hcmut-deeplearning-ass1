@@ -511,7 +511,7 @@ else:
     # Fine-tune YOLOv8
     from src.data import prepare_yolo_dataset
     yaml_path = prepare_yolo_dataset('../data/voc', '../data/voc_yolo')
-    best_pt = train_yolov8(yaml_path, model_size='n', epochs=20,
+    best_pt = train_yolov8(yaml_path, model_size='n', epochs=2,
                             project='../results', name='yolov8n_voc')
     print(f"YOLOv8 best checkpoint: {best_pt}")
 else:

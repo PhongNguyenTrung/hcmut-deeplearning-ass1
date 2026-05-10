@@ -161,14 +161,14 @@ def fit_frcnn(
     if config is None:
         config = {}
 
-    epochs = config.get("epochs", 10)
+    epochs = config.get("epochs", 2)
     lr = config.get("lr", 0.005)
     momentum = config.get("momentum", 0.9)
     weight_decay = config.get("weight_decay", 0.0005)
     step_size = config.get("step_size", 7)
     gamma = config.get("gamma", 0.1)
     device = config.get("device", get_device())
-    save_path = config.get("save_path", "results/checkpoints/frcnn_voc.pth")
+    save_path = config.get("save_path", "exercise_2/results/checkpoints/frcnn_voc.pth")
     verbose = config.get("verbose", True)
     max_batches = config.get("max_batches", None)  # None = full epoch; int = limit for dry-run
 
@@ -235,10 +235,10 @@ def fit_frcnn(
 def train_yolov8(
     data_yaml: str,
     model_size: str = "n",
-    epochs: int = 20,
+    epochs: int = 2,
     imgsz: int = 640,
     batch: int = 16,
-    project: str = "results",
+    project: str = "exercise_2/results",
     name: str = "yolo_voc",
     device: str = "auto",
     exist_ok: bool = True,

@@ -1,0 +1,12 @@
+{
+  "model": "YOLOv8n",
+  "type": "one-stage",
+  "dataset": "Pascal VOC 2012",
+  "mAP_50": 0.6538585874223546,
+  "mAP_50_95": 0.45848696658585225,
+  "fps": 115.5,
+  "ms_per_image": 8.7,
+  "fps_device": "cuda",
+  "epochs": 2,
+  "checkpoint": "/content/hcmut-deeplearning-ass1/runs/detect/results/yolov8n_voc/weights/best.pt"
+}

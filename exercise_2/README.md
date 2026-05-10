@@ -28,11 +28,11 @@ cd hcmut-deeplearning-ass1
 
 # Fine-tune YOLOv8n (khuyến nghị bắt đầu với --dry-run)
 python exercise_2/scripts/run_finetune_yolo.py --dry-run
-python exercise_2/scripts/run_finetune_yolo.py --epochs 20
+python exercise_2/scripts/run_finetune_yolo.py --epochs 2
 
 # Fine-tune Faster R-CNN
 python exercise_2/scripts/run_finetune_frcnn.py --dry-run
-python exercise_2/scripts/run_finetune_frcnn.py --epochs 10
+python exercise_2/scripts/run_finetune_frcnn.py --epochs 2
 
 # So sánh kết quả (sau khi cả hai xong)
 python exercise_2/scripts/run_compare.py

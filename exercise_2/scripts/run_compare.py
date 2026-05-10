@@ -26,8 +26,8 @@ from exercise_2.src.utils import (
 
 
 def main():
-    yolo_path = "results/metrics/yolo_results.json"
-    frcnn_path = "results/metrics/frcnn_results.json"
+    yolo_path = "exercise_2/results/metrics/yolo_results.json"
+    frcnn_path = "exercise_2/results/metrics/frcnn_results.json"
 
     print("=" * 60)
     print("So sánh kết quả: YOLOv8 vs Faster R-CNN")
@@ -67,13 +67,13 @@ def main():
     # Biểu đồ
     print("\nĐang tạo biểu đồ...")
 
-    plot_map_comparison(results, save_path="results/plots/map_comparison.png")
-    plot_speed_accuracy_tradeoff(results, save_path="results/plots/speed_accuracy.png")
+    plot_map_comparison(results, save_path="exercise_2/results/plots/map_comparison.png")
+    plot_speed_accuracy_tradeoff(results, save_path="exercise_2/results/plots/speed_accuracy.png")
 
     if "AP_per_class" in yolo_data or "AP_per_class" in frcnn_data:
-        plot_per_class_ap(results, save_path="results/plots/per_class_ap.png")
+        plot_per_class_ap(results, save_path="exercise_2/results/plots/per_class_ap.png")
 
-    print("\nBiểu đồ đã lưu vào results/plots/")
+    print("\nBiểu đồ đã lưu vào exercise_2/results/plots/")
 
     # Phân tích
     map50_yolo = yolo_data.get("mAP_50", 0) * 100
@@ -92,7 +92,7 @@ def main():
     if fps_yolo > 0 and fps_frcnn > 0:
         ratio = fps_yolo / fps_frcnn
         print(f"  YOLOv8 nhanh hơn Faster R-CNN {ratio:.1f}x (FPS)")
-        print(f"  → Trade-off: YOLOv8 phù hợp real-time; Faster R-CNN cho độ chính xác cao hơn")
+        print("  → Trade-off: YOLOv8 phù hợp real-time; Faster R-CNN cho độ chính xác cao hơn")
 
 
 if __name__ == "__main__":

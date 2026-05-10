@@ -9,9 +9,7 @@ Kết quả lưu vào results/yolo_voc/ và results/metrics/yolo_results.json
 """
 
 import argparse
-import json
 import sys
-import os
 from pathlib import Path
 
 # Đảm bảo import được package exercise_2.src từ thư mục gốc dự án
@@ -25,7 +23,7 @@ from exercise_2.src.utils import save_metrics_json, print_detection_results_tabl
 
 def parse_args():
     p = argparse.ArgumentParser(description="Fine-tune YOLOv8 on Pascal VOC 2012")
-    p.add_argument("--epochs", type=int, default=20, help="Số epoch (default: 20)")
+    p.add_argument("--epochs", type=int, default=2, help="Số epoch (default: 2)")
     p.add_argument("--size", type=str, default="n", choices=["n", "s", "m"],
                    help="Model size: n=nano, s=small, m=medium (default: n)")
     p.add_argument("--batch", type=int, default=16, help="Batch size (default: 16)")
@@ -76,7 +74,7 @@ def main():
         epochs=args.epochs,
         imgsz=args.imgsz,
         batch=args.batch,
-        project="results",
+        project="exercise_2/results",
         name=f"yolov8{args.size}_voc",
         device="auto",
     )
@@ -89,10 +87,8 @@ def main():
         val_results = model.val(data=yaml_path, imgsz=args.imgsz, verbose=False)
         map50 = float(val_results.box.map50)
         map5095 = float(val_results.box.map)
-        ap_per_class_list = val_results.box.ap_class_index.tolist() \
-            if hasattr(val_results.box, "ap_class_index") else []
-        print(f"  mAP@0.5     = {map50*100:.1f}%")
-        print(f"  mAP@0.5:0.95 = {map5095*100:.1f}%")
+        print(f"  mAP@0.5     = {map50 * 100:.1f}%")
+        print(f"  mAP@0.5:0.95 = {map5095 * 100:.1f}%")
     except Exception as e:
         print(f"  [WARN] Không thể tính mAP từ ultralytics: {e}")
         map50, map5095 = 0.0, 0.0
@@ -122,9 +118,9 @@ def main():
         "checkpoint": best_pt,
     }
 
-    save_metrics_json(results, "results/metrics/yolo_results.json")
+    save_metrics_json(results, "exercise_2/results/metrics/yolo_results.json")
     print_detection_results_table({f"YOLOv8{args.size}": results})
-    print("\nHoàn tất! Kết quả đã lưu vào results/metrics/yolo_results.json")
+    print("\nHoàn tất! Kết quả đã lưu vào exercise_2/results/metrics/yolo_results.json")
 
 
 if __name__ == "__main__":

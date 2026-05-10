@@ -23,19 +23,18 @@ from exercise_2.src.utils import (
     save_metrics_json,
     print_detection_results_table,
     plot_loss_curves,
-    get_param_count,
 )
 
 
 def parse_args():
     p = argparse.ArgumentParser(description="Fine-tune Faster R-CNN on Pascal VOC 2012")
-    p.add_argument("--epochs", type=int, default=10, help="Số epoch (default: 10)")
+    p.add_argument("--epochs", type=int, default=2, help="Số epoch (default: 2)")
     p.add_argument("--batch", type=int, default=4, help="Batch size (default: 4)")
     p.add_argument("--lr", type=float, default=0.005, help="Learning rate (default: 0.005)")
     p.add_argument("--workers", type=int, default=2, help="Số data workers (default: 2)")
     p.add_argument("--data-dir", type=str, default="data/voc",
                    help="Thư mục VOC data (default: data/voc)")
-    p.add_argument("--checkpoint", type=str, default="results/checkpoints/frcnn_voc.pth",
+    p.add_argument("--checkpoint", type=str, default="exercise_2/results/checkpoints/frcnn_voc.pth",
                    help="Đường dẫn lưu checkpoint")
     p.add_argument("--dry-run", action="store_true",
                    help="Chỉ chạy 1 epoch với batch=2 để kiểm tra")
@@ -83,7 +82,7 @@ def main():
 
     # Lưu loss curves
     plot_loss_curves(history, title="Faster R-CNN Training Loss",
-                     save_path="results/plots/frcnn_loss.png")
+                     save_path="exercise_2/results/plots/frcnn_loss.png")
 
     # 4. Evaluate mAP
     print("\n[4/5] Đánh giá mAP trên validation set...")
@@ -92,8 +91,8 @@ def main():
     preds, targets = predict_frcnn(model, val_loader, device, score_threshold=0.05,
                                    max_batches=max_eval)
     map_results = compute_map_coco(preds, targets)
-    print(f"  mAP@0.5      = {map_results['mAP_50']*100:.1f}%")
-    print(f"  mAP@0.5:0.95 = {map_results['mAP_50_95']*100:.1f}%")
+    print(f"  mAP@0.5      = {map_results['mAP_50'] * 100:.1f}%")
+    print(f"  mAP@0.5:0.95 = {map_results['mAP_50_95'] * 100:.1f}%")
 
     # 5. FPS
     print("\n[5/5] Benchmark FPS...")
@@ -117,9 +116,9 @@ def main():
         "history": history,
     }
 
-    save_metrics_json(results, "results/metrics/frcnn_results.json")
+    save_metrics_json(results, "exercise_2/results/metrics/frcnn_results.json")
     print_detection_results_table({"Faster R-CNN": results})
-    print("\nHoàn tất! Kết quả đã lưu vào results/metrics/frcnn_results.json")
+    print("\nHoàn tất! Kết quả đã lưu vào exercise_2/results/metrics/frcnn_results.json")
 
 
 if __name__ == "__main__":
