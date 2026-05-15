@@ -52,4 +52,4 @@ ultralytics>=8.0.0
 # COCO evaluation metrics (mAP@0.5, mAP@0.5:0.95) — thư viện chuẩn cho detection
 pycocotools>=2.0.6
 # OpenCV — xử lý ảnh trong Gradio demo và visualization
-opencv-python>=4.8.0
+opencv-python>=4.13.0.92
