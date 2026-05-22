@@ -17,7 +17,7 @@
 
 # HuggingFace ecosystem
 transformers>=5.9.0
-datasets>=2.14.0
+datasets>=4.8.5
 tokenizers>=0.23.1
 
 # CLIP
