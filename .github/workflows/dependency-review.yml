@@ -33,7 +33,7 @@ jobs:
       - name: 'Checkout repository'
         uses: actions/checkout@v6
       - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         continue-on-error: true  # Add this line to prevent workflow failure
         with:
           comment-summary-in-pr: always

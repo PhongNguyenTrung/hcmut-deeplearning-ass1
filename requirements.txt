@@ -16,28 +16,28 @@
 # torchvision>=0.15.0
 
 # HuggingFace ecosystem
-transformers>=4.35.0
-datasets>=2.14.0
-tokenizers>=0.14.0
+transformers>=5.9.0
+datasets>=4.8.5
+tokenizers>=0.23.1
 
 # CLIP
 openai-clip
 
 # Interpretability
-grad-cam>=1.4.8
-captum>=0.6.0
+grad-cam>=1.5.5
+captum>=0.9.0
 
 # Demo
-gradio>=4.0.0
+gradio>=6.14.0
 
 # Data & Visualization
-numpy>=1.24.0
-pandas>=2.0.0
+numpy>=2.4.4
+pandas>=3.0.3
 matplotlib>=3.10.9
 seaborn>=0.12.0
 scikit-learn>=1.8.0
 Pillow>=12.2.0
-tqdm>=4.65.0
+tqdm>=4.67.3
 
 # Logging (optional)
 wandb
@@ -48,8 +48,8 @@ ipywidgets
 
 # ── Object Detection (exercise_2) ─────────────────────────────────────────────
 # YOLOv8 — one-stage detector với API dễ dùng cho người mới
-ultralytics>=8.0.0
+ultralytics>=8.4.53
 # COCO evaluation metrics (mAP@0.5, mAP@0.5:0.95) — thư viện chuẩn cho detection
-pycocotools>=2.0.6
+pycocotools>=2.0.11
 # OpenCV — xử lý ảnh trong Gradio demo và visualization
-opencv-python>=4.8.0
+opencv-python>=4.13.0.92
