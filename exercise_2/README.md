@@ -134,12 +134,12 @@ flowchart TB
     subgraph FRCNN[Faster R-CNN two-stage]
         F1[ResNet-50 FPN backbone]
         F2[RPN region proposals]
-        F3[ROI head: classify + box reg]
+        F3["ROI head: classify + box reg"]
     end
 
     subgraph EVAL[Evaluation]
-        mAP[mAP@0.5 · mAP@.5:.95<br/>via pycocotools]
-        FPS[FPS benchmark<br/>warmup + 50 runs]
+        mAP["mAP@0.5 · mAP@0.5:0.95<br/>via pycocotools"]
+        FPS["FPS benchmark<br/>warmup + 50 runs"]
     end
 
     IMGS & XML --> VOC2YOLO --> YOLO
