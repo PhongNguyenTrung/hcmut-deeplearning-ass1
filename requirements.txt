@@ -48,7 +48,7 @@ ipywidgets
 
 # ── Object Detection (exercise_2) ─────────────────────────────────────────────
 # YOLOv8 — one-stage detector với API dễ dùng cho người mới
-ultralytics>=8.4.121
+ultralytics>=8.4.128
 # COCO evaluation metrics (mAP@0.5, mAP@0.5:0.95) — thư viện chuẩn cho detection
 pycocotools>=2.0.11
 # OpenCV — xử lý ảnh trong Gradio demo và visualization
