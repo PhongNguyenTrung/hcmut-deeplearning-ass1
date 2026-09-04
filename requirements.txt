@@ -16,7 +16,7 @@
 # torchvision>=0.15.0
 
 # HuggingFace ecosystem
-transformers>=5.15.1
+transformers>=5.16.1
 datasets>=5.0.1
 tokenizers>=0.23.1
 
