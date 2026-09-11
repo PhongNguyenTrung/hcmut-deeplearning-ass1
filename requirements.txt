@@ -18,7 +18,7 @@
 # HuggingFace ecosystem
 transformers>=5.16.1
 datasets>=5.0.1
-tokenizers>=0.23.1
+tokenizers>=0.23.2
 
 # CLIP
 openai-clip
