@@ -36,11 +36,11 @@ _PALETTE = [
 def compute_iou(box1, box2):
     """
     Tính Intersection over Union (IoU) của hai bounding boxes.
-    
+
     Args:
         box1: [x1, y1, x2, y2]
         box2: [x1, y1, x2, y2]
-        
+
     Returns:
         iou: float
     """
