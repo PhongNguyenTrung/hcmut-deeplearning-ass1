@@ -8,6 +8,7 @@ Cung cấp:
 - Biểu đồ per-class AP
 - Lưu/tải metrics JSON
 - Bảng kết quả đẹp trên terminal
+- IoU calculation
 """
 
 import json
@@ -28,6 +29,43 @@ _PALETTE = [
     "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000",
     "#aaffc3", "#808000", "#ffd8b1", "#000075", "#808080",
 ]
+
+
+# ─── IoU Utility ──────────────────────────────────────────────────────────────
+
+def compute_iou(box1, box2):
+    """
+    Tính Intersection over Union (IoU) của hai bounding boxes.
+
+    Args:
+        box1: [x1, y1, x2, y2]
+        box2: [x1, y1, x2, y2]
+
+    Returns:
+        iou: float
+    """
+    # Determine the coordinates of the intersection rectangle
+    x_left = max(box1[0], box2[0])
+    y_top = max(box1[1], box2[1])
+    x_right = min(box1[2], box2[2])
+    y_bottom = min(box1[3], box2[3])
+
+    if x_right < x_left or y_bottom < y_top:
+        return 0.0
+
+    # The intersection of two axis-aligned bounding boxes is always an
+    # axis-aligned bounding box
+    intersection_area = (x_right - x_left) * (y_bottom - y_top)
+
+    # Compute the area of both AABBs
+    box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
+    box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
+
+    # Compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the intersection area
+    iou = intersection_area / float(box1_area + box2_area - intersection_area)
+    return iou
 
 
 # ─── JSON utilities ───────────────────────────────────────────────────────────
